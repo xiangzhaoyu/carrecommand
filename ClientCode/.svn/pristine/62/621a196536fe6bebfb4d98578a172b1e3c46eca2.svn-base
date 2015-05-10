@@ -1,0 +1,358 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import android.util.SparseIntArray;
+
+import com.surekam.greenguide.bean.BlockPeriodList;
+import com.surekam.greenguide.bean.PolicieClass;
+import com.surekam.greenguide.bean.Schedule;
+import com.surekam.greenguide.bean.TimeSchedule;
+
+public class PolicyConvert {
+
+	public static Map<Integer, SparseIntArray> policiesToMap(
+			List<PolicieClass> policyList) {
+		Map<Integer, SparseIntArray> schedules = new HashMap<Integer, SparseIntArray>();
+
+		SparseIntArray workDay = null;
+
+		// 先寻找有没有周二到周六的,有就切换到简单模式
+		Boolean isSimple = false;
+		for (PolicieClass policy : policyList) {
+			BlockPeriodList periodList = policy.getBlockPeriod();
+			if (periodList != null) {
+				int startDay = periodList.getStartDay();
+				int endDay = periodList.getEndDay();
+
+				if (startDay == 2 && endDay == 6) {
+					isSimple = true;
+					break;
+				}
+			}
+		}
+
+		if (isSimple) {
+			// 简单模式
+			for (PolicieClass policy : policyList) {
+				BlockPeriodList periodList = policy.getBlockPeriod();
+				if (periodList != null) {
+					int startDay = periodList.getStartDay();
+					int endDay = periodList.getEndDay();
+
+					if (startDay == 2 && endDay == 6) {
+						workDay = schedules.get(Schedule.TYPE_WORKDAY);
+						if (workDay == null) {
+							workDay = newSchedule();
+						}
+						workDay = ConvertPolicyToSchedule(workDay, periodList);
+						schedules.put(Schedule.TYPE_WORKDAY, workDay);
+					} else if (startDay == 1) {
+						workDay = schedules.get(Schedule.TYPE_WEEKEND);
+						if (workDay == null) {
+							workDay = newSchedule();
+						}
+
+						workDay = ConvertPolicyToSchedule(workDay, periodList);
+						schedules.put(Schedule.TYPE_WEEKEND, workDay);
+					}
+				}
+			}
+
+		} else {
+			// 高级模式,周一到周日
+			for (PolicieClass policy : policyList) {
+				BlockPeriodList periodList = policy.getBlockPeriod();
+				if (periodList != null) {
+					int startDay = periodList.getStartDay();
+					int endDay = periodList.getEndDay();
+					for (int i = startDay; i <= endDay; i++) {
+						workDay = schedules.get(i);
+						if (workDay == null) {
+							workDay = newSchedule();
+						}
+						workDay = ConvertPolicyToSchedule(workDay, periodList);
+						schedules.put(i, workDay);
+					}
+				}
+			}
+		}
+
+		return schedules;
+	}
+
+	private static Map<Integer, SparseIntArray> addSchudle(
+			Map<Integer, SparseIntArray> _listSchedule, int day,
+			SparseIntArray newSche) {
+		// 一个日期规则如果有多个时间规则,需要合并规则
+		SparseIntArray exitsSche = _listSchedule.get(day);
+
+		if (exitsSche == null) {
+			_listSchedule.put(day, newSche);
+		} else {
+			SparseIntArray newTime = newSche;
+			for (int i = 0; i < newTime.size(); i++) {
+				int timeKey = newTime.keyAt(i);
+				int timeValue = newTime.valueAt(i);
+
+				// 把允许上网的时间合并到已经存在的时间列表
+				if (timeKey == 0) {
+					exitsSche.put(timeKey, timeValue);
+				}
+			}
+
+		}
+
+		return _listSchedule;
+
+	}
+
+	public static Map<Integer, SparseIntArray> policyListToMap(
+			BlockPeriodList periodList) {
+		Map<Integer, SparseIntArray> schedules = new HashMap<Integer, SparseIntArray>();
+
+		schedules = changePriodList(periodList);
+
+		return schedules;
+	}
+
+	public static List<BlockPeriodList> MapToPolicy(
+			Map<Integer, SparseIntArray> schedule) {
+		return NewScheduleToPriod(schedule);
+	}
+
+	private static Map<Integer, SparseIntArray> changePriodList(
+			BlockPeriodList periodList) {
+		List<BlockPeriodList> newPeriodLists = new ArrayList<BlockPeriodList>();
+		Map<Integer, SparseIntArray> maps = new HashMap<Integer, SparseIntArray>();
+
+		SparseIntArray workDay = null;
+
+		if (periodList != null) {
+
+			int startDay = periodList.getStartDay();
+			int endDay = periodList.getEndDay();
+
+			if (startDay == 2 && endDay == 6) {
+				workDay = ConvertPolicyToSchedule(workDay, periodList);
+				maps.put(Schedule.TYPE_WORKDAY, workDay);
+			} else {
+				for (int i = startDay; i <= endDay; i++) {
+					SparseIntArray sche = maps.get(i);
+					sche = ConvertPolicyToSchedule(sche, periodList);
+					maps.put(i, sche);
+				}
+
+			}
+
+		}
+
+		return maps;
+	}
+
+	private static SparseIntArray ConvertPolicyToSchedule(SparseIntArray sche,
+			BlockPeriodList per) {
+		if (sche == null) {
+			sche = newSchedule();
+		}
+
+		// int startDay = per.getStartDay();
+		// int endDay = per.getEndDay();
+		int startHour = per.getStartTime().getHours();
+		int startMin = per.getStartTime().getMins();
+		int endHour = per.getEndTime().getHours();
+		int endMin = per.getEndTime().getMins();
+
+		if (startMin == 59) {
+			if (startHour == 11) {
+				startHour = 11;
+			} else if (startHour == 23) {
+				startHour = 23;
+			} else {
+				startHour++;
+			}
+		}
+
+		// if (endMin == 59) {
+		// if (endHour == 11) {
+		// endHour = 11;
+		// } else if (endHour == 23) {
+		// endHour = 23;
+		// } else {
+		// endHour++;
+		// }
+		// }
+
+		for (int i = startHour; i <= endHour; i++) {
+			sche.put(i, 0);
+		}
+
+		return sche;
+	}
+
+	private static Map<Integer, Schedule> changePriodListToSchedule(
+			List<BlockPeriodList> periodList) {
+		Map<Integer, Schedule> schedules = new HashMap<Integer, Schedule>();
+
+		for (BlockPeriodList per : periodList) {
+			int startDay = per.getStartDay();
+			int endDay = per.getEndDay();
+			int startHour = per.getStartTime().getHours();
+			int endHour = per.getStartTime().getHours();
+
+			if (startDay == 2 && endDay == 6) {
+				Schedule sche = new Schedule();
+
+				for (int i = startHour; i <= endHour; i++) {
+					sche.getDaySchedule().put(i, 1);
+				}
+
+				schedules.put(-1, sche);
+
+			}
+
+			if (startDay == 1 && endDay == 1) {
+				Schedule sche = new Schedule();
+
+				for (int i = startHour; i <= endHour; i++) {
+					sche.getDaySchedule().put(i, 1);
+				}
+
+				schedules.put(-2, sche);
+
+			}
+
+		}
+
+		return schedules;
+	}
+
+	private static List<BlockPeriodList> NewScheduleToPriod(
+			Map<Integer, SparseIntArray> schedules) {
+
+		List<BlockPeriodList> periodList = new ArrayList<BlockPeriodList>();
+
+		// 工作日
+		SparseIntArray workSch = schedules.get(Schedule.TYPE_WORKDAY);
+		if (workSch != null) {
+			List<BlockPeriodList> workList = convertWordSchList(workSch, 0);
+			if (workList.size() > 0) {
+				periodList.addAll(workList);
+			}
+		}
+
+		// 周末分周六和周日
+		SparseIntArray weekday = schedules.get(Schedule.TYPE_WEEKEND);
+		if (weekday != null) {
+			List<BlockPeriodList> startdayList = convertWordSchList(weekday, 7);
+			if (startdayList != null && startdayList.size() > 0) {
+				periodList.addAll(startdayList);
+			}
+
+			List<BlockPeriodList> sundayList = convertWordSchList(weekday, 1);
+			if (sundayList != null) {
+				if (sundayList != null && sundayList.size() > 0) {
+					periodList.addAll(sundayList);
+				}
+			}
+		}
+
+		// 高级设置 1-7
+		for (int i = 1; i <= 7; i++) {
+			SparseIntArray sch = schedules.get(i);
+			if (sch != null) {
+				List<BlockPeriodList> list = convertWordSchList(sch, i);
+				if (list != null && list.size() > 0) {
+					periodList.addAll(list);
+				}
+			}
+		}
+
+		return periodList;
+	}
+
+	/**
+	 * 
+	 * @param workSch
+	 * @param workday
+	 *            0-周一到周五 1-其它时期
+	 * @return
+	 */
+	private static List<BlockPeriodList> convertWordSchList(
+			SparseIntArray workSch, int workday) {
+		if (workSch == null)
+			return null;
+		SparseIntArray dayTimes = workSch;
+		int startDay = workday == 0 ? 2 : workday;
+		int endDay = workday == 0 ? 6 : workday;
+
+		List<BlockPeriodList> lists = new ArrayList<BlockPeriodList>();
+
+		BlockPeriodList newPeriod = null;
+
+		for (int i = 0; i < dayTimes.size(); i++) {
+			int nowHour = dayTimes.keyAt(i);
+			int value = dayTimes.valueAt(i);
+			TimeSchedule time = new TimeSchedule(nowHour, 0);
+			if (nowHour == 0) {
+				time.setHours(0);
+				time.setMins(1);
+			}
+
+			if (newPeriod == null && value == 0) {
+				newPeriod = newPeriodList();
+				newPeriod.setStartDay(startDay);
+				newPeriod.setEndDay(endDay);
+				newPeriod.setStartTime(time);
+				// newPeriod.setEndTime(time);
+			}
+
+			if (value == 0) {
+				newPeriod.setEndTime(new TimeSchedule(nowHour, 59));
+			}
+
+			if (newPeriod != null && value == 1) {
+				// newPeriod.setEndTime(time);
+				lists.add(newPeriod);
+				newPeriod = null;
+			}
+
+			if (i == dayTimes.size() - 1 && value == 0) {
+
+				newPeriod.setEndTime(new TimeSchedule(nowHour, 59));
+				lists.add(newPeriod);
+				newPeriod = null;
+			}
+
+		}
+
+		return lists;
+	}
+
+	public static BlockPeriodList newPeriodList() {
+		BlockPeriodList newPeriod = new BlockPeriodList();
+		// String repeatType = "DAYOFWEEK";
+		String timeZone = "PRC";
+
+		// newPeriod.setRepeatType(repeatType);
+		newPeriod.setTimezone(timeZone);
+
+		return newPeriod;
+	}
+
+	private static SparseIntArray newSchedule() {
+
+		// TODO Auto-generated constructor stub
+		SparseIntArray daySchedule = new SparseIntArray();
+		for (int i = 0; i <= 23; i++) {
+			daySchedule.put(i, 1);
+		}
+
+		return daySchedule;
+	}
+
+}

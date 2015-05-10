@@ -1,0 +1,122 @@
+package com.surekam.greenguide.ui.adapter;
+
+import java.util.List;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.Switch;
+import android.widget.TextView;
+
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.bean.DaySchedule;
+
+public class ScheduleAdapter extends BaseAdapter {
+	List<DaySchedule> _datas;
+	Context _context;
+
+	public ScheduleAdapter(Context context, List<DaySchedule> datas) {
+		_context = context;
+		_datas = datas;
+	}
+
+	@Override
+	public int getCount() {
+		return _datas.size();
+	}
+
+	@Override
+	public DaySchedule getItem(int position) {
+		// TODO Auto-generated method stub
+		return _datas.get(position);
+	}
+
+	@Override
+	public long getItemId(int position) {
+		// TODO Auto-generated method stub
+		return position;
+	}
+
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+		if (convertView == null) {
+			convertView = LayoutInflater.from(_context).inflate(
+					R.layout.list_item_schedule, null);
+		}
+
+		DaySchedule data = getItem(position);
+		if (data != null) {
+			TextView tv = (TextView) convertView
+					.findViewById(R.id.list_item_schedule_content);
+			ImageView iv = (ImageView) convertView
+					.findViewById(R.id.list_item_schedule_net);
+			
+			tv.setText(getContent(data));
+			
+			
+
+		}
+
+		return convertView;
+
+	}
+
+	private String getContent(DaySchedule data) {
+		StringBuilder sb = new StringBuilder();
+
+		if (data.getStartDay() == 2 && data.getEndDay() == 6) {
+			sb.append("日期设计: 工作日(周一到周五)");
+		} else {
+			String days = "";
+			for (int i = data.getStartDay(); i <= data.getEndDay(); i++) {
+				if (days.length() > 0)
+					days += ",";
+				days += getDayStr(i);
+			}
+
+			sb.append("日期设计: " + days);
+		}
+
+		sb.append("\n");
+
+		sb.append("开始时间: " + data.getStartTime().toString());
+		sb.append("   结束时间: " + data.getEndTime().toString());
+
+		return sb.toString();
+	}
+
+	private String getDayStr(int day) {
+		String dayStr = "";
+		switch (day) {
+		case 2:
+			dayStr = "周一";
+			break;
+		case 3:
+			dayStr = "周二";
+			break;
+		case 4:
+			dayStr = "周三";
+			break;
+		case 5:
+			dayStr = "周四";
+			break;
+		case 6:
+			dayStr = "周五";
+			break;
+		case 7:
+			dayStr = "周六";
+			break;
+		case 1:
+			dayStr = "周日";
+			break;
+		default:
+			break;
+		}
+
+		return dayStr;
+	}
+
+}

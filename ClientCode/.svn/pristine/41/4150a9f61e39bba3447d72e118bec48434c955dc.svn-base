@@ -1,0 +1,103 @@
+package com.surekam.greenguide.bean;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class PolicieClass {
+	String[] protocolList;
+
+	List<PeriodList> periodList;
+	List<DaySchedule> blockPeriodList = new ArrayList<DaySchedule>();
+	String actionType; // "BLOCK" 阻拦 DETECT 允许
+
+	PolicyPath policyPath;
+	String excludeType;
+	String scanRequest;
+	String scanResponse;
+	String serviceType;
+	int id;
+
+	
+
+	public List<DaySchedule> getBlockPeriodList() {
+		return blockPeriodList;
+	}
+
+	public void setBlockPeriodList(List<DaySchedule> blockPeriodList) {
+		this.blockPeriodList = blockPeriodList;
+	}
+
+	public String getActionType() {
+		return actionType;
+	}
+
+	public void setActionType(String actionType) {
+		this.actionType = actionType;
+	}
+
+	public PolicyPath getPolicyPath() {
+		return policyPath;
+	}
+
+	public void setPolicyPath(PolicyPath policyPath) {
+		this.policyPath = policyPath;
+	}
+
+	public String[] getProtocolList() {
+		return protocolList;
+	}
+
+	public void setProtocolList(String[] protocolList) {
+		this.protocolList = protocolList;
+	}
+
+	public String getExcludeType() {
+		return excludeType;
+	}
+
+	public void setExcludeType(String excludeType) {
+		this.excludeType = excludeType;
+	}
+
+	public String getScanRequest() {
+		return scanRequest;
+	}
+
+	public void setScanRequest(String scanRequest) {
+		this.scanRequest = scanRequest;
+	}
+
+	public String getScanResponse() {
+		return scanResponse;
+	}
+
+	public void setScanResponse(String scanResponse) {
+		this.scanResponse = scanResponse;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getServiceType() {
+		return serviceType;
+	}
+
+	public void setServiceType(String serviceType) {
+		this.serviceType = serviceType;
+	}
+
+	public List<PeriodList> getPeriodList() {
+		return periodList;
+	}
+
+	public void setPeriodList(List<PeriodList> periodList) {
+		this.periodList = periodList;
+	}
+	
+
+}

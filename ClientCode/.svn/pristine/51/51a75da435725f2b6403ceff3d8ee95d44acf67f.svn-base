@@ -1,0 +1,10 @@
+package com.surekam.greenguide.event;
+
+public class EditTimeRuleEvent {
+	public String testTitle;
+
+	public EditTimeRuleEvent(String testTitle) {
+		this.testTitle = testTitle;
+	}
+
+}

@@ -1,0 +1,30 @@
+package com.surekam.greenguide.bean;
+
+public class TimeSchedule {
+
+	int mins;
+	int hours;
+
+	public TimeSchedule(int hours, int minis) {
+		// TODO Auto-generated constructor stub
+		this.hours = hours;
+		this.mins = minis;
+	}
+
+	public int getMins() {
+		return mins;
+	}
+
+	public void setMins(int mins) {
+		this.mins = mins;
+	}
+
+	public int getHours() {
+		return hours;
+	}
+
+	public void setHours(int hours) {
+		this.hours = hours;
+	}
+
+}

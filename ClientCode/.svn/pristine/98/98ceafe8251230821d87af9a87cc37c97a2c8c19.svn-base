@@ -1,0 +1,7 @@
+package com.surekam.greenguide.ui.fragment;
+
+import com.surekam.greenguide.common.BaseFragment;
+
+public class FragmentHome extends BaseFragment {
+
+}

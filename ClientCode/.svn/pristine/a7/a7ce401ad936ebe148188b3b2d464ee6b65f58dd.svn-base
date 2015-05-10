@@ -1,0 +1,250 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import android.util.SparseIntArray;
+
+import com.surekam.greenguide.bean.PeriodList;
+import com.surekam.greenguide.bean.Schedule;
+import com.surekam.greenguide.bean.TimeSchedule;
+
+public class PolicyConvert {
+
+	public static Map<Integer, Schedule> policyListToMap(
+			List<PeriodList> periodList) {
+		Map<Integer, Schedule> schedules = new HashMap<Integer, Schedule>();
+
+		schedules = changePriodList(periodList);
+
+		return schedules;
+	}
+
+	public static List<PeriodList> MapToPolicy(Map<Integer, Schedule> schedule) {
+		return NewScheduleToPriod(schedule);
+	}
+
+	private static Map<Integer, Schedule> changePriodList(
+			List<PeriodList> periodList) {
+		List<PeriodList> newPeriodLists = new ArrayList<PeriodList>();
+		Map<Integer, Schedule> maps = new HashMap<Integer, Schedule>();
+
+		Schedule workDay = null;
+
+		if (periodList != null) {
+
+			for (PeriodList per : periodList) {
+				// if (per.getRepeatType().equals("EVERYDAY")) {
+				// periodList.remove(per);
+				// }
+				//
+				// if (per.getRepeatType().equals("DAYOFMONTH")) {
+				// periodList.remove(per);
+				// }
+				//
+				// if (per.getRepeatType().equals("DAYOFWEEK")) {
+
+				int startDay = per.getStartDay();
+				int endDay = per.getEndDay();
+
+				if (startDay == 2 && endDay == 6) {
+					workDay = ConvertPolicyToSchedule(workDay, per);
+					maps.put(Schedule.TYPE_WORKDAY, workDay);
+				} else {
+					for (int i = startDay; i <= endDay; i++) {
+						Schedule sche = maps.get(i);
+						sche = ConvertPolicyToSchedule(sche, per);
+						maps.put(i, sche);
+					}
+
+				}
+
+			}
+			// }
+		}
+
+		return maps;
+	}
+
+	private static Schedule ConvertPolicyToSchedule(Schedule sche,
+			PeriodList per) {
+		if (sche == null) {
+			sche = new Schedule();
+		}
+
+		// int startDay = per.getStartDay();
+		// int endDay = per.getEndDay();
+		int startHour = per.getStartTime().getHours();
+		int startMin = per.getStartTime().getMins();
+		int endHour = per.getEndTime().getHours();
+		int endMin = per.getEndTime().getMins();
+
+		if (startHour == 23 && startMin == 59) {
+			startHour = 24;
+		}
+
+		if (endHour == 23 && endMin == 59) {
+			endHour = 24;
+		}
+
+		for (int i = startHour; i <= endHour; i++) {
+			sche.getDaySchedule().put(i, 1);
+		}
+
+		return sche;
+	}
+
+	private static Map<Integer, Schedule> changePriodListToSchedule(
+			List<PeriodList> periodList) {
+		Map<Integer, Schedule> schedules = new HashMap<Integer, Schedule>();
+
+		for (PeriodList per : periodList) {
+			int startDay = per.getStartDay();
+			int endDay = per.getEndDay();
+			int startHour = per.getStartTime().getHours();
+			int endHour = per.getStartTime().getHours();
+
+			if (startDay == 2 && endDay == 6) {
+				Schedule sche = new Schedule();
+
+				for (int i = startHour; i <= endHour; i++) {
+					sche.getDaySchedule().put(i, 1);
+				}
+
+				schedules.put(-1, sche);
+
+			}
+
+			if (startDay == 1 && endDay == 1) {
+				Schedule sche = new Schedule();
+
+				for (int i = startHour; i <= endHour; i++) {
+					sche.getDaySchedule().put(i, 1);
+				}
+
+				schedules.put(-2, sche);
+
+			}
+
+		}
+
+		return schedules;
+	}
+
+	private static List<PeriodList> NewScheduleToPriod(
+			Map<Integer, Schedule> schedules) {
+
+		List<PeriodList> periodList = new ArrayList<PeriodList>();
+
+		// 工作日
+		Schedule workSch = schedules.get(Schedule.TYPE_WORKDAY);
+		if (workSch != null) {
+			List<PeriodList> workList = convertWordSchList(workSch, 0);
+			if (workList.size() > 0) {
+				periodList.addAll(workList);
+			}
+		}
+
+		// 周末分周六和周日
+		Schedule weekday = schedules.get(Schedule.TYPE_WEEKEND);
+		if (weekday != null) {
+			List<PeriodList> startdayList = convertWordSchList(weekday, 7);
+			if (startdayList != null && startdayList.size() > 0) {
+				periodList.addAll(startdayList);
+			}
+		}
+
+		List<PeriodList> sundayList = convertWordSchList(weekday, 1);
+		if (sundayList != null) {
+			if (sundayList != null && sundayList.size() > 0) {
+				periodList.addAll(sundayList);
+			}
+		}
+
+		// 高级设置 1-7
+		for (int i = 1; i <= 7; i++) {
+			Schedule sch = schedules.get(i);
+			if (sch != null) {
+				List<PeriodList> list = convertWordSchList(sch, i);
+				if (list != null && list.size() > 0) {
+					periodList.addAll(list);
+				}
+			}
+		}
+
+		return periodList;
+	}
+
+	/**
+	 * 
+	 * @param workSch
+	 * @param workday
+	 *            0-周一到周五 1-其它时期
+	 * @return
+	 */
+	private static List<PeriodList> convertWordSchList(Schedule workSch,
+			int workday) {
+		if (workSch == null)
+			return null;
+		SparseIntArray dayTimes = workSch.getDaySchedule();
+		int startDay = workday == 0 ? 2 : workday;
+		int endDay = workday == 0 ? 6 : workday;
+
+		List<PeriodList> lists = new ArrayList<PeriodList>();
+
+		PeriodList newPeriod = null;
+
+		for (int i = 0; i < dayTimes.size(); i++) {
+			int nowHour = dayTimes.keyAt(i);
+			int value = dayTimes.valueAt(i);
+			TimeSchedule time = new TimeSchedule(nowHour, 0);
+			if (nowHour == 0) {
+				time.setHours(0);
+				time.setMins(1);
+			}
+
+			if (newPeriod == null && value == 0) {
+				newPeriod = newPeriodList();
+				newPeriod.setStartDay(startDay);
+				newPeriod.setEndDay(endDay);
+				newPeriod.setStartTime(time);
+				newPeriod.setEndTime(time);
+			}
+
+			if (value == 0) {
+
+				newPeriod.setEndTime(new TimeSchedule(nowHour, 59));
+			}
+
+			if (newPeriod != null && value == 1) {
+				newPeriod.setEndTime(time);
+				lists.add(newPeriod);
+				newPeriod = null;
+			}
+
+			if (i == dayTimes.size() - 1 && value == 0) {
+
+				newPeriod.setEndTime(new TimeSchedule(nowHour, 59));
+				lists.add(newPeriod);
+				newPeriod = null;
+			}
+
+		}
+
+		return lists;
+	}
+
+	public static PeriodList newPeriodList() {
+		PeriodList newPeriod = new PeriodList();
+		// String repeatType = "DAYOFWEEK";
+		String timeZone = "PRC";
+
+		// newPeriod.setRepeatType(repeatType);
+		newPeriod.setTimezone(timeZone);
+
+		return newPeriod;
+	}
+
+}

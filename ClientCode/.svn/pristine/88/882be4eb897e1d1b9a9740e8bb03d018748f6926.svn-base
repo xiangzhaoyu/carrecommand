@@ -1,0 +1,24 @@
+package com.surekam.greenguide.bean;
+
+public class TimeSchedule {
+
+	int mins;
+	int hours;
+
+	public int getMins() {
+		return mins;
+	}
+
+	public void setMins(int mins) {
+		this.mins = mins;
+	}
+
+	public int getHours() {
+		return hours;
+	}
+
+	public void setHours(int hours) {
+		this.hours = hours;
+	}
+
+}

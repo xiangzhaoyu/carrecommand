@@ -1,0 +1,145 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
+
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.common.BaseFragment;
+
+@SuppressLint("JavascriptInterface")
+public class FragmentReportStatistic extends BaseFragment {
+
+	private WebView webView;
+	private ListView listView;
+	private SimpleAdapter adapter;
+	private ArrayList<HashMap<String, String>> listData;
+	Handler handler = new Handler();
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_context = getActivity();
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_report_statistics, null);
+
+		initView();
+		return _view;
+	}
+
+	private void initView() {
+
+		webView = (WebView) _view.findViewById(R.id.webReport);
+		webView.getSettings().setJavaScriptEnabled(true); // 允许使用javascript脚本语言
+		// webView.getSettings().setBuiltInZoomControls(true); // 设置可以缩放
+		// 设置javaScript可用于操作MainActivity类
+		// webView.addJavascriptInterface(this, "MainActivity");
+		webView.loadUrl("file:///android_asset/test1.htm");
+		webView.addJavascriptInterface(new Sender(), "mytest");
+
+		listView = (ListView) _view.findViewById(R.id.listView1);
+		bindListView("门户网站");
+
+	}
+
+	private void bindListView(String type) {
+
+		listData = new ArrayList<HashMap<String, String>>();
+		HashMap<String, String> map = new HashMap<String, String>();
+		map.put("type", type);
+		map.put("content", "www.sina.com.cn");
+		map.put("time", "50");
+
+		listData.add(map);
+		map = new HashMap<String, String>();
+		map.put("type", type);
+		map.put("content", "www.sina.com.cn");
+		map.put("time", "40");
+
+		listData.add(map);
+		map = new HashMap<String, String>();
+		map.put("type", type);
+		map.put("content", "www.sina.com.cn");
+		map.put("time", "30");
+
+		listData.add(map);
+		map = new HashMap<String, String>();
+		map.put("type", type);
+		map.put("content", "www.sina.com.cn");
+		map.put("time", "20");
+
+		listData.add(map);
+		adapter = new SimpleAdapter(_context, listData,
+				R.layout.list_item_record, new String[] { "type", "content",
+						"time" }, new int[] { R.id.type, R.id.content,
+						R.id.times });
+		listView.setOnItemClickListener(_itemListner);
+		listView.setAdapter(adapter);
+
+	}
+
+	final private class Sender
+    {
+
+       public void showToast(final String text)
+       {
+    	
+           handler.post(new Runnable()  
+           {
+                @Override
+                public void run() {
+                    // TODO Auto-generated method stub
+                	bindListView(text);
+                  //  Toast.makeText(_context, "选择的类型: " + text+"，绑定ListView", Toast.LENGTH_SHORT).show() ;
+                }               
+           }) ;
+     }
+    }
+
+
+	
+	OnItemClickListener _itemListner = new OnItemClickListener() {
+
+		@Override
+		public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+				long arg3) {
+			// TODO Auto-generated method stub
+
+			HashMap<String, String> map = listData.get(arg2);
+			if (map != null) {
+				String url = map.get("content");
+				openNetPage(url);
+			}
+
+		}
+	};
+
+	private void openNetPage(String url) {
+		Uri uri = Uri.parse(url);
+		Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+		intent.setClassName("com.android.browser",
+				"com.android.browser.BrowserActivity");
+		getActivity().startActivity(intent);
+	}
+
+
+}

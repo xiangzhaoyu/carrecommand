@@ -1,0 +1,122 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.List;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
+
+import com.squareup.otto.Subscribe;
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.app.UIHelper;
+import com.surekam.greenguide.bean.BlockPeriodList;
+import com.surekam.greenguide.bean.PolicieClass;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.event.EditTimeRuleEvent;
+import com.surekam.greenguide.tools.MenuUtil;
+import com.surekam.greenguide.ui.adapter.PeriodListAdapter;
+
+public class FragmentTimeAdvanceList extends BaseFragment {
+	ListView _listView;
+	PeriodListAdapter _adapter;
+	static PolicieClass _PolicyData;
+	static List<BlockPeriodList> _listDatas;
+
+	int _selectIndex = 0;
+
+	public static FragmentTimeAdvanceList newInstance(PolicieClass policyData) {
+		FragmentTimeAdvanceList fragment = new FragmentTimeAdvanceList();
+		_PolicyData = policyData;
+		_listDatas = _PolicyData.getBlockPeriodList();
+		return fragment;
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_time_advance_list, null);
+		_context = getActivity();
+
+		initTitle();
+		initView();
+
+		return _view;
+	}
+
+	private void initTitle() {
+		MenuUtil.setMenuBack(getActivity(), _view);
+		MenuUtil.setMenuTitle(_view, "上网时段");
+		// MenuUtil.setMenuBackTransparent(_view);
+		MenuUtil.setMenuMore(getActivity(), _view, true, "简易设置", _simpleListner);
+	}
+
+	OnClickListener _simpleListner = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			UIHelper.fragmentTimeSimple(_context);
+		}
+	};
+
+	OnClickListener _addListner = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			_selectIndex = -1;
+
+			UIHelper.fragmentTimeAdvanceEdit(_context, null);
+		}
+	};
+
+	private void initView() {
+		_view.findViewById(R.id.time_advance_bt_add).setOnClickListener(
+				_addListner);
+
+		_listView = (ListView) _view.findViewById(R.id.time_advance_list);
+		_adapter = new PeriodListAdapter(_context, _listDatas);
+		_listView.setAdapter(_adapter);
+		_listView.setOnItemClickListener(_itemListner);
+
+	}
+
+	OnItemClickListener _itemListner = new OnItemClickListener() {
+
+		@Override
+		public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+				long arg3) {
+			// TODO Auto-generated method stub
+			_selectIndex = (int) arg3;
+
+			if (arg1.getId() == R.id.list_item_schedule_delete) {
+				UIHelper.ToastMessage(_context, "点击删除按钮" + _selectIndex);
+			}
+
+			UIHelper.fragmentTimeAdvanceEdit(_context,
+					_listDatas.get(_selectIndex));
+
+		}
+	};
+
+	@Subscribe
+	public void newTimeAdvance(EditTimeRuleEvent event) {
+		if (event != null) {
+			if (_selectIndex >= 0) {
+				_listDatas.remove(_selectIndex);
+			}
+
+			_listDatas.addAll(event.data);
+			_adapter.notifyDataSetChanged();
+		}
+
+	}
+
+}

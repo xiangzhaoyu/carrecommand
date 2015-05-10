@@ -1,0 +1,285 @@
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Application theme. -->
+    <style name="AppTheme" parent="AppBaseTheme">
+        <item name="android:windowNoTitle">true</item>
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    </style>
+
+    <style name="Theme.NoTitleBar" parent="@android:style/Theme.NoTitleBar">
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <style name="Theme.HalfTranslucent" parent="@android:style/Theme.Translucent">
+        <item name="android:windowBackground">@color/half_transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@style/Animation.Translucent</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <style name="Theme.FullTranslucent" parent="@android:style/Theme.Translucent">
+        <item name="android:windowBackground">@color/full_transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@style/Animation.Translucent</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <style name="Theme.SlideTop" parent="@android:style/Theme.NoTitleBar">
+        <item name="android:windowAnimationStyle">@style/Animation.SlideTop</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <style name="Theme.SlideLeft" mce_bogus="1" parent="@android:style/Theme.NoTitleBar">
+        <item name="android:windowAnimationStyle">@style/Animation.SlideLeft</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <style name="text_white_26px">
+        <item name="android:textSize">17.829987sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="text_white_24px">
+        <item name="android:textSize">16.5sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="text_white_22px">
+        <item name="android:textSize">15.159973sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="text_white_20px">
+        <item name="android:textSize">13.829987sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="text_white_16px">
+        <item name="android:textSize">11.159973sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="text_gray_26px">
+        <item name="android:textSize">17.829987sp</item>
+        <item name="android:textColor">@color/gray</item>
+    </style>
+
+    <style name="text_gray_20px">
+        <item name="android:textSize">13.829987sp</item>
+        <item name="android:textColor">@color/gray</item>
+    </style>
+
+    <style name="text_yahui_20px">
+        <item name="android:textSize">13.829987sp</item>
+        <item name="android:textColor">@color/yahui</item>
+    </style>
+
+    <style name="text_yahui_18px">
+        <item name="android:textSize">12.5sp</item>
+        <item name="android:textColor">@color/yahui</item>
+    </style>
+
+    <style name="text_yahui_16px">
+        <item name="android:textSize">11.159973sp</item>
+        <item name="android:textColor">@color/yahui</item>
+    </style>
+
+    <style name="text_yahei_26px">
+        <item name="android:textSize">17.829987sp</item>
+        <item name="android:textColor">@color/yahei</item>
+    </style>
+
+    <style name="text_yahei_22px">
+        <item name="android:textSize">15.159973sp</item>
+        <item name="android:textColor">@color/yahei</item>
+    </style>
+
+    <style name="text_yahei_20px">
+        <item name="android:textSize">13.829987sp</item>
+        <item name="android:textColor">@color/yahei</item>
+    </style>
+
+    <style name="text_yahei_16px">
+        <item name="android:textSize">11.159973sp</item>
+        <item name="android:textColor">@color/yahei</item>
+    </style>
+
+    <style name="textView_size18_white">
+        <item name="android:textSize">18.0sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="textView_size16_white">
+        <item name="android:textSize">16.0sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="textView_size14_white">
+        <item name="android:textSize">14.0sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="textView_size12_white">
+        <item name="android:textSize">12.0sp</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="textView_size16_black">
+        <item name="android:textSize">16.0sp</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="textView_size18_yahei">
+        <item name="android:textSize">18.0sp</item>
+        <item name="android:textColor">@color/yahei</item>
+    </style>
+
+    <style name="textView_size16_yahei">
+        <item name="android:textSize">16.0sp</item>
+        <item name="android:textColor">@color/yahei</item>
+    </style>
+
+    <style name="textView_size14_yahei">
+        <item name="android:textSize">14.0sp</item>
+        <item name="android:textColor">@color/yahei</item>
+    </style>
+
+    <style name="textView_size12_yahei">
+        <item name="android:textSize">12.0sp</item>
+        <item name="android:textColor">@color/yahei</item>
+    </style>
+
+    <style name="textView_size10_yahei">
+        <item name="android:textSize">10.669983sp</item>
+        <item name="android:textColor">@color/yahei</item>
+    </style>
+
+    <style name="textView_size16_yahui">
+        <item name="android:textSize">16.0sp</item>
+        <item name="android:textColor">@color/yahui</item>
+    </style>
+
+    <style name="textView_size14_yahui">
+        <item name="android:textSize">14.0sp</item>
+        <item name="android:textColor">@color/yahui</item>
+    </style>
+
+    <style name="textView_size10_yahui">
+        <item name="android:textSize">10.0sp</item>
+        <item name="android:textColor">@color/yahui</item>
+    </style>
+
+    <style name="textView_size12_yahui">
+        <item name="android:textSize">12.0sp</item>
+        <item name="android:textColor">@color/yahui</item>
+    </style>
+
+    <style name="textView_size14_darkGray">
+        <item name="android:textSize">14.0sp</item>
+        <item name="android:textColor">@color/darkGray</item>
+    </style>
+
+    <style name="textView_size12_darkGray">
+        <item name="android:textSize">12.0sp</item>
+        <item name="android:textColor">@color/darkGray</item>
+    </style>
+
+    <style name="textView_size16_green">
+        <item name="android:textSize">16.0sp</item>
+        <item name="android:textColor">@color/green</item>
+    </style>
+
+    <style name="textView_size16_green_bold">
+        <item name="android:textSize">16.0sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/green</item>
+    </style>
+
+    <style name="textView_size14_green_bold">
+        <item name="android:textSize">14.0sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/green</item>
+    </style>
+
+    <style name="textView_size16_blue">
+        <item name="android:textSize">16.0sp</item>
+        <item name="android:textColor">@color/deep_blue</item>
+    </style>
+
+    <style name="textView_size14_blue">
+        <item name="android:textSize">14.0sp</item>
+        <item name="android:textColor">@color/deep_blue</item>
+    </style>
+
+    <style name="textView_size12_blue">
+        <item name="android:textSize">12.0sp</item>
+        <item name="android:textColor">@color/deep_blue</item>
+    </style>
+
+    <style name="button_size19_white">
+        <item name="android:textSize">19.0sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="button_size17_white">
+        <item name="android:textSize">16.0sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="button_size17_white_client">
+        <item name="android:textSize">17.0sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="title_detail_head">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">42dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">left</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:shadowColor">#3c000000</item>
+        <item name="android:shadowDx">2</item>
+        <item name="android:shadowDy">2</item>
+        <item name="android:shadowRadius">2</item>
+    </style>
+
+    <style name="week_left">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1.0</item>
+        <item name="android:background">@drawable/check_week_left</item>
+        <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@drawable/week_text_color</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="week_middle">
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1.0</item>
+        <item name="android:background">@drawable/check_week_middle</item>
+        <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@drawable/week_text_color</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="week_right">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1.0</item>
+        <item name="android:background">@drawable/check_week_right</item>
+        <item name="android:button">@null</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@drawable/week_text_color</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+</resources>

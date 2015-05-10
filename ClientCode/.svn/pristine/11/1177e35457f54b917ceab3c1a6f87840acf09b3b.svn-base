@@ -1,0 +1,97 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.surekam.greenguide.bean.PeriodList;
+import com.surekam.greenguide.bean.Schedule;
+
+public class PeriodConvert {
+
+	public static Map<String, Schedule> periodListToMap(
+			List<PeriodList> periodList) {
+		Map<String, Schedule> schedules = new HashMap<String, Schedule>();
+
+		List<PeriodList> newList = changePriodList(periodList);
+		schedules = changePriodListToSchedule(newList);
+
+		return schedules;
+	}
+
+	private static List<PeriodList> changePriodList(List<PeriodList> periodList) {
+		List<PeriodList> newPeriodLists = new ArrayList<PeriodList>();
+
+		if (periodList != null) {
+			for (PeriodList per : periodList) {
+				if (per.getRepeatType().equals("EVERYDAY")) {
+
+				}
+
+				if (per.getRepeatType().equals("DAYOFMONTH")) {
+
+				}
+
+				if (per.getRepeatType().equals("DAYOFWEEK")) {
+					int startDay = per.getStartDay();
+					int endDay = per.getEndDay();
+
+					if (startDay == 2 && endDay == 6) {
+						newPeriodLists.add(per);
+					}
+
+					if (startDay == 7 || endDay == 7) {
+						newPeriodLists.add(per);
+					}
+
+					if (startDay == 1 || endDay == 1) {
+						newPeriodLists.add(per);
+					}
+				}
+			}
+		}
+
+		return newPeriodLists;
+	}
+
+	private static Map<String, Schedule> changePriodListToSchedule(
+			List<PeriodList> periodList) {
+		Map<String, Schedule> schedules = new HashMap<String, Schedule>();
+		schedules.put(Schedule.TYPE_WORKDAY, new Schedule());
+		schedules.put(Schedule.TYPE_WEEKEND, new Schedule());
+
+		for (PeriodList per : periodList) {
+			int startDay = per.getStartDay();
+			int endDay = per.getEndDay();
+			int startHour = per.getStartTime().getHours();
+			int endHour = per.getStartTime().getHours();
+
+			if (startDay == 2 && endDay == 6) {
+				Schedule sche = schedules.get(Schedule.TYPE_WORKDAY);
+
+				for (int i = startHour; i <= endHour; i++) {
+					sche.getDaySchedule().put(i, 1);
+				}
+
+				schedules.put(Schedule.TYPE_WORKDAY, sche);
+
+			}
+
+			if (startDay == 1 && endDay == 1) {
+				Schedule sche = schedules.get(Schedule.TYPE_WEEKEND);
+
+				for (int i = startHour; i <= endHour; i++) {
+					sche.getDaySchedule().put(i, 1);
+				}
+
+				schedules.put(Schedule.TYPE_WEEKEND, sche);
+
+			}
+
+		}
+
+		return schedules;
+	}
+
+}

@@ -1,0 +1,52 @@
+package com.surekam.greenguide.bean;
+
+public class DaySchedule {
+
+	String timeZone = "China/Beijing";
+
+	int endDay = 0;
+	int startDay = 0;
+	TimeSchedule startTime;
+	TimeSchedule endTime;
+
+	public String getTimeZone() {
+		return timeZone;
+	}
+
+	public void setTimeZone(String timeZone) {
+		this.timeZone = timeZone;
+	}
+
+	public int getEndDay() {
+		return endDay;
+	}
+
+	public void setEndDay(int endDay) {
+		this.endDay = endDay;
+	}
+
+	public int getStartDay() {
+		return startDay;
+	}
+
+	public void setStartDay(int startDay) {
+		this.startDay = startDay;
+	}
+
+	public TimeSchedule getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(TimeSchedule startTime) {
+		this.startTime = startTime;
+	}
+
+	public TimeSchedule getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(TimeSchedule endTime) {
+		this.endTime = endTime;
+	}
+
+}

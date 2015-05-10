@@ -1,0 +1,121 @@
+package com.surekam.greenguide.ui.view;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.content.Context;
+import android.util.AttributeSet;
+import android.util.SparseIntArray;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.LinearLayout;
+
+import com.surekam.greenguide.R;
+
+public class ViewWeekSelect extends LinearLayout {
+	Context _context;
+
+	SparseIntArray _maps = new SparseIntArray();
+
+	SparseIntArray _dayList = new SparseIntArray();
+
+	public ViewWeekSelect(Context context) {
+		super(context);
+		// TODO Auto-generated constructor stub_context
+		_context = context;
+		initView();
+	}
+
+	public ViewWeekSelect(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		// TODO Auto-generated constructor stub_context
+		_context = context;
+		initView();
+
+	}
+
+	private void initView() {
+		View v = LayoutInflater.from(_context).inflate(
+				R.layout.view_week_day_choose, this);
+
+		// 日期注释 周日为1.....周六为7
+		_maps.put(R.id.cb_1, 2);
+		_maps.put(R.id.cb_2, 3);
+		_maps.put(R.id.cb_3, 4);
+		_maps.put(R.id.cb_4, 5);
+		_maps.put(R.id.cb_5, 6);
+		_maps.put(R.id.cb_6, 7);
+		_maps.put(R.id.cb_7, 1);
+
+		_dayList.put(1, 0);
+		_dayList.put(2, 0);
+		_dayList.put(3, 0);
+		_dayList.put(4, 0);
+		_dayList.put(5, 0);
+		_dayList.put(6, 0);
+		_dayList.put(7, 0);
+
+		((CheckBox) v.findViewById(R.id.cb_1))
+				.setOnCheckedChangeListener(mListener);
+		((CheckBox) v.findViewById(R.id.cb_2))
+				.setOnCheckedChangeListener(mListener);
+		((CheckBox) v.findViewById(R.id.cb_3))
+				.setOnCheckedChangeListener(mListener);
+		((CheckBox) v.findViewById(R.id.cb_4))
+				.setOnCheckedChangeListener(mListener);
+		((CheckBox) v.findViewById(R.id.cb_5))
+				.setOnCheckedChangeListener(mListener);
+		((CheckBox) v.findViewById(R.id.cb_6))
+				.setOnCheckedChangeListener(mListener);
+		((CheckBox) v.findViewById(R.id.cb_7))
+				.setOnCheckedChangeListener(mListener);
+
+		// addView(v);
+	}
+
+	OnCheckedChangeListener mListener = new OnCheckedChangeListener() {
+
+		@Override
+		public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
+			// TODO Auto-generated method stub
+			setValue(arg0.getId(), arg1);
+		}
+	};
+
+	private void setValue(int resId, boolean checked) {
+		int value = _maps.get(resId);
+		if (resId > 0) {
+			_dayList.put(value, checked ? 1 : 0);
+		}
+
+	}
+
+	public SparseIntArray getSelectDay() {
+		return _dayList;
+	}
+
+	public List<Integer> getSelectDayList() {
+		List<Integer> days = new ArrayList<Integer>();
+		for (int i = 0; i < _dayList.size(); i++) {
+			if (_dayList.valueAt(i) == 1) {
+				days.add(_dayList.keyAt(i));
+			}
+		}
+		return days;
+	}
+
+	public String getSelectDayString() {
+
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < _dayList.size(); i++) {
+			if (_dayList.valueAt(i) == 1) {
+				sb.append(_dayList.keyAt(i));
+			}
+		}
+		return sb.toString();
+	}
+
+}

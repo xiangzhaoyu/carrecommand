@@ -1,0 +1,38 @@
+package com.surekam.greenguide.ui.activity;
+
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.common.BaseFragmentActivity;
+import com.surekam.greenguide.ui.fragment.FragmentWhiteListAdvance;
+
+public class ActivityWhiteList extends BaseFragmentActivity {
+
+	
+	Fragment _nowFragment;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+
+		getSupportFragmentManager().beginTransaction()
+				.replace(R.id.main_frame, new FragmentWhiteListAdvance())
+				.commit();
+
+	}
+	
+	public void addFragment(Fragment fragment, String name) {
+
+		getSupportFragmentManager()
+				.beginTransaction()
+				.setCustomAnimations(R.anim.push_right_in,
+						R.anim.push_right_out).add(R.id.main_frame, fragment)
+				.addToBackStack(name).commit();
+
+		_nowFragment = fragment;
+	}
+
+}

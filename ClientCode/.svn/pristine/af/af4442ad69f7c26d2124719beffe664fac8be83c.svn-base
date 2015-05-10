@@ -1,0 +1,58 @@
+package com.surekam.greenguide.bean;
+
+import android.util.SparseIntArray;
+
+public class Schedule {
+	public final static String TYPE_EVERDAY = "EVERYDAY";
+	public final static String TYPE_WORKDAY = "WORKDAY";
+	public final static String TYPE_WEEKEND = "WEEKEND";
+
+	int startDay = 0;
+	int endDay = 0;
+	String dayType = "";// EVERYDAY 每天 WORKDAY 工作日周一周五 WEEKEND 周末
+
+	SparseIntArray daySchedule;
+
+	public Schedule() {
+		// TODO Auto-generated constructor stub
+		daySchedule = new SparseIntArray();
+
+		for (int i = 0; i <= 23; i++) {
+			daySchedule.put(i, 0);
+
+		}
+	}
+
+	public int getStartDay() {
+		return startDay;
+	}
+
+	public void setStartDay(int startDay) {
+		this.startDay = startDay;
+	}
+
+	public int getEndDay() {
+		return endDay;
+	}
+
+	public void setEndDay(int endDay) {
+		this.endDay = endDay;
+	}
+
+	public String getDayType() {
+		return dayType;
+	}
+
+	public void setDayType(String dayType) {
+		this.dayType = dayType;
+	}
+
+	public SparseIntArray getDaySchedule() {
+		return daySchedule;
+	}
+
+	public void setDaySchedule(SparseIntArray daySchedule) {
+		this.daySchedule = daySchedule;
+	}
+
+}

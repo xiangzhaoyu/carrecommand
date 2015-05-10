@@ -1,0 +1,727 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.http.entity.StringEntity;
+import org.apache.http.protocol.HTTP;
+
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Bundle;
+import android.util.SparseIntArray;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
+import android.widget.RadioButton;
+import android.widget.TextView;
+import android.widget.ViewSwitcher;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.lidroid.xutils.http.RequestParams;
+import com.squareup.otto.Subscribe;
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.api.HttpExecute;
+import com.surekam.greenguide.api.HttpExecute.httpReturn;
+import com.surekam.greenguide.api._FakeX509TrustManager;
+import com.surekam.greenguide.app.AppContext;
+import com.surekam.greenguide.app.UIHelper;
+import com.surekam.greenguide.bean.PeriodList;
+import com.surekam.greenguide.bean.PolicieClass;
+import com.surekam.greenguide.bean.PolicyPath;
+import com.surekam.greenguide.bean.Schedule;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.event.EditTimeRuleEvent;
+import com.surekam.greenguide.tools.ACache;
+import com.surekam.greenguide.tools.DebugUtil;
+import com.surekam.greenguide.tools.MenuUtil;
+import com.surekam.greenguide.ui.view.MySurfaceView;
+import com.surekam.greenguide.ui.view.MySurfaceView.onValueChanged;
+
+public class FragmentTimeSimpleSet extends BaseFragment {
+	MySurfaceView _surfaceView;
+	View _layoutEdit;
+
+	ACache _aCache;
+	String _saveTag = "timeList";
+
+	SparseIntArray _editTimeSchedule;
+
+	// int _isWorkDay = -1;// -1-工作日 -2-周末 -1具体天数
+
+	Map<Integer, Schedule> _listSchedule = new HashMap<Integer, Schedule>();
+	PolicieClass _PolicyData;
+
+	ViewSwitcher _viewSwitcher;
+
+	int _timeId = 21;
+
+	Boolean _simpleType = true; // 是否工作日和周末的简单模式
+	boolean _isDay = true; // 是否白天
+	int _selectDay = -1;// 当前选中日期
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_context = getActivity();
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_time_list, null);
+		_view.setOnTouchListener(UIHelper.mTouchListner);
+
+		initTitle();
+		initView();
+		initData();
+		return _view;
+	}
+
+	private void initTitle() {
+		MenuUtil.setMenuBack(getActivity(), _view);
+		MenuUtil.setMenuTitle(_view, "上网时段");
+		// MenuUtil.setMenuBackTransparent(_view);
+		MenuUtil.setMenuMore(getActivity(), _view, true, "推荐设置",
+				_advanceListner);
+	}
+
+	private void initView() {
+		_aCache = ACache.get(_context);
+
+		_layoutEdit = _view.findViewById(R.id.time_layout_edit);
+		_view.findViewById(R.id.time_bt_save).setOnClickListener(_saveListener);
+		_view.findViewById(R.id.time_bt_cancel).setOnClickListener(
+				_cancelListener);
+		_view.findViewById(R.id.time_iv_day_night).setOnClickListener(
+				mDayNightListener);
+		_view.findViewById(R.id.time_tv_day_night_text).setOnClickListener(
+				mDayNightListener);
+
+		_view.findViewById(R.id.time_bt_day_night).setVisibility(View.GONE);
+
+		initDayHeader();
+	}
+
+	private void initDayHeader() {
+		_viewSwitcher = (ViewSwitcher) _view
+				.findViewById(R.id.view_day_switcher);
+
+		ImageView btAdvance = (ImageView) _view
+				.findViewById(R.id.view_day_bt_advance);
+		btAdvance.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+
+				changeSimpleType(false);
+
+				_viewSwitcher.showNext();
+			}
+		});
+
+		ImageView btNormal = (ImageView) _view
+				.findViewById(R.id.view_day_bt_normal);
+		btNormal.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+
+				changeSimpleType(true);
+
+				_viewSwitcher.showPrevious();
+			}
+		});
+
+		_surfaceView = (MySurfaceView) _view
+				.findViewById(R.id.time_surface_view);
+		_surfaceView.setOnValueChangeed(mValueListner);
+
+		((RadioButton) _view.findViewById(R.id.view_day_rb_workday))
+				.setOnCheckedChangeListener(_daySelectListner);
+		((RadioButton) _view.findViewById(R.id.view_day_rb_weekendday))
+				.setOnCheckedChangeListener(_daySelectListner);
+
+		((CheckBox) _view.findViewById(R.id.view_day_week_1))
+				.setOnCheckedChangeListener(_daySelectListner);
+		((CheckBox) _view.findViewById(R.id.view_day_week_2))
+				.setOnCheckedChangeListener(_daySelectListner);
+		((CheckBox) _view.findViewById(R.id.view_day_week_3))
+				.setOnCheckedChangeListener(_daySelectListner);
+		((CheckBox) _view.findViewById(R.id.view_day_week_4))
+				.setOnCheckedChangeListener(_daySelectListner);
+		((CheckBox) _view.findViewById(R.id.view_day_week_5))
+				.setOnCheckedChangeListener(_daySelectListner);
+		((CheckBox) _view.findViewById(R.id.view_day_week_6))
+				.setOnCheckedChangeListener(_daySelectListner);
+		((CheckBox) _view.findViewById(R.id.view_day_week_7))
+				.setOnCheckedChangeListener(_daySelectListner);
+
+	}
+
+	OnCheckedChangeListener _daySelectListner = new OnCheckedChangeListener() {
+
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView,
+				boolean isChecked) {
+			// TODO Auto-generated method stub
+			int day = -1;
+
+			switch (buttonView.getId()) {
+			case R.id.view_day_rb_workday:
+				day = -1;
+				break;
+			case R.id.view_day_rb_weekendday:
+				day = -2;
+				break;
+			case R.id.view_day_week_1:
+				day = 2;
+				break;
+			case R.id.view_day_week_2:
+				day = 3;
+				break;
+			case R.id.view_day_week_3:
+				day = 4;
+				break;
+			case R.id.view_day_week_4:
+				day = 5;
+				break;
+			case R.id.view_day_week_5:
+				day = 6;
+				break;
+			case R.id.view_day_week_6:
+				day = 7;
+				break;
+			case R.id.view_day_week_7:
+				day = 8;
+				break;
+
+			default:
+				break;
+			}
+
+			checked(isChecked, day);
+
+		}
+	};
+
+	private void checked(boolean isChecked, int day) {
+
+		if (isChecked) {
+			_selectDay = day;
+
+			dayChanged(day);
+		} else {
+
+		}
+	}
+
+	private void dayChanged(int day) {
+		// _isWorkDay = type;
+		// _isDay = true;
+		showSchedule(day);
+	}
+
+	private void initData() {
+
+		_editTimeSchedule = new SparseIntArray();
+		for (int i = 0; i <= 23; i++) {
+			_editTimeSchedule.put(i, 0);
+		}
+
+		// 数据存放在本地
+		// String json = getSavedSchedule();
+		// if (!StringUtils.isEmpty(json)) {
+		// _PolicyData = new Gson().fromJson(json, PolicieClass.class);
+		// if (_PolicyData != null) {
+		// _listSchedule = PolicyConvert.policyListToMap(_PolicyData
+		// .getPeriodList());
+		// }
+		//
+		// _simpleType = true;
+		// _isDay = true;
+		// showSchedule(-1);
+		// } else {
+		GetPolicies();
+		// }
+
+	}
+
+	public String getSavedSchedule() {
+		// _aCache.remove(_saveTag);
+		String json = _aCache.getAsString(_saveTag);
+		return json;
+	}
+
+	onValueChanged mValueListner = new onValueChanged() {
+		@Override
+		public void onChanged() {
+			// TODO Auto-generated method stub
+			if (_layoutEdit.getVisibility() == View.GONE) {
+				_layoutEdit.setVisibility(View.VISIBLE);
+			}
+		}
+	};
+
+	// OnClickListener mNewRule = new OnClickListener() {
+	//
+	// @Override
+	// public void onClick(View arg0) {
+	// // TODO Auto-generated method stub
+	// ((ActivityMain) _context).addFragment(new FragmentTimeSet(),
+	// "FragmentTimeSet");
+	// }
+	// };
+
+	OnClickListener mDayNightListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			_isDay = !_isDay;
+			dayChanged(_selectDay);
+		}
+	};
+
+	OnClickListener _saveListener = new OnClickListener() {
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			_layoutEdit.setVisibility(View.GONE);
+			_editTimeSchedule = _surfaceView.getValue();
+
+			Map<Integer, Schedule> newList = new HashMap<Integer, Schedule>();
+			List<Integer> checkList = getCheckList();
+
+			if (checkList != null && checkList.size() > 0) {
+
+				for (int day : checkList) {
+
+					Schedule sch = getScheduleByTag(day);
+					sch.setDaySchedule(_editTimeSchedule);
+					newList.put(day, sch);
+
+				}
+
+				Gson gs = new Gson();
+				String saveStr = gs.toJson(_listSchedule);
+				_listSchedule = newList;
+
+				updatePolicy();
+
+				DebugUtil.printDebugTag("save", saveStr);
+			}
+
+		}
+	};
+
+	OnClickListener _cancelListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			_layoutEdit.setVisibility(View.GONE);
+			_surfaceView.setValue(_editTimeSchedule, _isDay);
+
+		}
+	};
+
+	@Subscribe
+	public void onEditTimeRuleRecived(EditTimeRuleEvent event) {
+		if (event != null) {
+			// UIHelper.ToastMessage(_context, event.testTitle);
+		}
+
+	}
+
+	private void changeSimpleType(boolean type) {
+		_simpleType = type;
+
+		if (_simpleType) {
+			for (int i = 1; i <= 7; i++) {
+				_listSchedule.put(i, new Schedule());
+			}
+
+			((RadioButton) _view.findViewById(R.id.view_day_rb_workday))
+					.setChecked(true);
+
+			checked(true, -1);
+
+		} else {
+
+			((CheckBox) _view.findViewById(R.id.view_day_week_1))
+					.setChecked(true);
+
+			_listSchedule.put(-1, new Schedule());
+			_listSchedule.put(-2, new Schedule());
+
+			checked(true, 2);
+		}
+	}
+
+	private void changeDayAndNight(final boolean isDay) {
+		final ImageView iv = (ImageView) _view
+				.findViewById(R.id.time_iv_day_night);
+		Animation a = AnimationUtils
+				.loadAnimation(_context, R.anim.top_to_down);
+		a.setAnimationListener(new AnimationListener() {
+
+			@Override
+			public void onAnimationStart(Animation arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onAnimationEnd(Animation arg0) {
+				// TODO Auto-generated method stub
+				if (isDay) {
+					iv.setBackgroundResource(R.drawable.widget_w_0);
+				} else {
+					iv.setBackgroundResource(R.drawable.widget_w_3);
+				}
+
+				Animation b = AnimationUtils.loadAnimation(_context,
+						R.anim.down_top);
+				iv.startAnimation(b);
+			}
+		});
+
+		iv.startAnimation(a);
+
+	}
+
+	private void showSchedule(int day) {
+		_selectDay = day;
+
+		Schedule sch = getScheduleByTag(day);
+		if (sch == null) {
+			sch = new Schedule();
+		}
+
+		// SparseIntArray sp = sch.getDaySchedule();
+		// if (sp == null)
+		// sp = new SparseIntArray();
+		//
+		// for (int i = 0; i <= 23; i++) {
+		// if (sp.get(i) == 0) {
+		// sp.put(i, 0);
+		// }
+		// }
+
+		_editTimeSchedule = sch.getDaySchedule();
+		// UI处理
+		ImageView iv = (ImageView) _view.findViewById(R.id.time_bt_day_night);
+
+		iv.setImageResource(_isDay ? R.drawable.icon_menu_daytime_n
+				: R.drawable.icon_menu_night_n);
+
+		TextView tv = (TextView) _view
+				.findViewById(R.id.time_tv_day_night_text);
+		tv.setText(_isDay ? "上午" : "下午");
+		tv.getPaint().setFakeBoldText(true);
+
+		_surfaceView.setValue(_editTimeSchedule, _isDay);
+		changeDayAndNight(_isDay);
+
+	}
+
+	private Schedule getScheduleByTag(int type) {
+
+		Schedule sch;
+
+		sch = _listSchedule.get(type);
+		if (sch == null) {
+			sch = new Schedule();
+			sch.setDayNum(type);
+			_listSchedule.put(type, sch);
+		}
+
+		return sch;
+	}
+
+	private List<Integer> getCheckList() {
+		List<Integer> checkList = new ArrayList<Integer>();
+
+		if (_simpleType) {
+			RadioButton rb1 = (RadioButton) _view
+					.findViewById(R.id.view_day_rb_workday);
+
+			if (rb1.isChecked()) {
+				checkList.add(-1);
+			} else {
+				checkList.add(-2);
+			}
+
+		} else {
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_1))
+					.isChecked())
+				checkList.add(2);
+
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_2))
+					.isChecked())
+				checkList.add(3);
+
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_3))
+					.isChecked())
+				checkList.add(4);
+
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_4))
+					.isChecked())
+				checkList.add(5);
+
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_5))
+					.isChecked())
+				checkList.add(6);
+
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_6))
+					.isChecked())
+				checkList.add(7);
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_7))
+					.isChecked())
+				checkList.add(1);
+
+		}
+
+		return checkList;
+
+	}
+
+	OnClickListener _advanceListner = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			showPop(arg0);
+
+			// UIHelper.fragmentTimeAdvanceList(_context, _PolicyData);
+		}
+	};
+
+	PopupWindow mPopupWindow;
+	View mPopView;
+
+	public void showPop(View v) {
+		if (mPopView == null) {
+			mPopView = LayoutInflater.from(_context).inflate(
+					R.layout.view_pop_advance, null);
+
+			/** 初始化PopupWindow */
+			int width = AppContext.getInstance()._screenWidth / 2;
+
+			mPopupWindow = new PopupWindow(mPopView, width,// ViewGroup.LayoutParams.WRAP_CONTENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT);
+			mPopupWindow.setFocusable(true);// 取得焦点
+			mPopupWindow.setBackgroundDrawable(new BitmapDrawable());
+			/** 设置PopupWindow弹出和退出时候的动画效果 */
+			mPopupWindow.setAnimationStyle(R.style.MyDialogStyleTop);
+		}
+
+		// TextView tv = (TextView) mPopView.findViewById(R.id.tv_content);
+		// tv.setText(Html.fromHtml(getInfoHtml()));
+		mPopupWindow.showAsDropDown(v, 0, 0);
+	}
+
+	private void GetPolicies() {
+
+		_FakeX509TrustManager.allowAllSSL();
+		HttpExecute<List<PolicieClass>> http = new HttpExecute<List<PolicieClass>>(
+				getActivity(), mPoliciesListener);
+
+		http.setType(new TypeToken<List<PolicieClass>>() {
+		}.getType());
+
+		String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/tb";
+
+		// https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/wf/policy/28
+
+		http.get(url, null);
+
+	}
+
+	private httpReturn<List<PolicieClass>> mPoliciesListener = new httpReturn<List<PolicieClass>>() {
+
+		@Override
+		public void onSuccess(List<PolicieClass> result) {
+			// TODO Auto-generated method stub
+			AnalysisData(result);
+		}
+
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	private void AnalysisData(List<PolicieClass> result) {
+		for (PolicieClass policie : result) {
+			if (policie.getActionType().equals("BLOCK")
+					&& policie.getPolicyPath().getSrcAddress()
+							.equals("0.0.0.0/0")) {
+				_PolicyData = policie;
+			}
+		}
+
+		if (_PolicyData != null) {
+			_listSchedule = PolicyConvert.policyListToMap(_PolicyData
+					.getPeriodList());
+		}
+
+		_selectDay = -1;
+		_isDay = true;
+		dayChanged(_selectDay);
+	}
+
+	private void updatePolicy() {
+		// if (_PolicyData != null && _PolicyData.getId() > 0) {
+		//
+		// _FakeX509TrustManager.allowAllSSL();
+		// HttpExecute<String> http = new HttpExecute<String>(getActivity(),
+		// _deleteListner);
+		//
+		// String url =
+		// "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/tb/policy/";
+		// _PolicyData.getId();
+		//
+		// // _aCache.put(_saveTag, new Gson().toJson(_PolicyData));
+		//
+		// // DebugUtil.printDebugTag("保存字符串", new Gson().toJson(_PolicyData));
+		//
+		// http.delete(url, null);
+		// } else {
+		newPolicy();
+		// }
+
+	}
+
+	private httpReturn<String> _deleteListner = new httpReturn<String>() {
+
+		@Override
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+			newPolicy();
+			UIHelper.ToastMessage(_context, result);
+		}
+
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+			UIHelper.ToastMessage(_context, "删除数据:" + error + "|" + msg);
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	private void newPolicy() {
+
+		_FakeX509TrustManager.allowAllSSL();
+		HttpExecute<String> http = new HttpExecute<String>(getActivity(),
+				_newListner);
+
+		String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/tb/";
+
+		List<PeriodList> datas = PolicyConvert.MapToPolicy(_listSchedule);
+
+		if (_PolicyData == null) {
+			_PolicyData = new PolicieClass();
+
+			_PolicyData.setExcludeType("NONE");
+
+			_PolicyData.setServiceType("TB");
+			_PolicyData.setActionType("BLOCK");
+
+			PolicyPath path = new PolicyPath();
+			path.setSrcAddress("0.0.0.0/0");
+			path.setSrcName(null);
+			path.setSrcIsGroup(false);
+			path.setDstAddress("0.0.0.0/0");
+			_PolicyData.setPolicyPath(path);
+
+			// _PolicyData.setProtocolList(new String[] { "ALL" });
+			_PolicyData.setPeriodList(new ArrayList<PeriodList>());
+
+		}
+
+		_PolicyData.setScanRequest(false);
+		_PolicyData.setScanResponse(false);
+		_PolicyData.setProtocolList(new String[] { "ALL" });
+		_PolicyData.setBlockPeriodList(datas);
+
+		Gson gson = new GsonBuilder().serializeNulls().create();
+		String json = gson.toJson(_PolicyData);
+		DebugUtil.printDebugTag("保存字符串", json);
+
+		RequestParams params = new RequestParams();
+		params.addHeader("Content-Type", "application/json");
+		try {
+			params.setBodyEntity(new StringEntity(json, HTTP.UTF_8));
+			http.post(url, params);
+
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			UIHelper.ToastMessage(_context, "保存失败,转化失败!");
+			e.printStackTrace();
+		}
+
+	}
+
+	private httpReturn<String> _newListner = new httpReturn<String>() {
+
+		@Override
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+
+			UIHelper.ToastMessage(_context, "保存成功!");
+		}
+
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+			UIHelper.ToastMessage(_context, "新增:" + error + "|" + msg);
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+}

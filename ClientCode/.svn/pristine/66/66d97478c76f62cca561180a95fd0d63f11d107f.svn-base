@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout 
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal" 
+android:background="@drawable/loding4"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    
+    
+   <LinearLayout 
+       android:layout_marginTop="20dp"
+        android:orientation="horizontal" 
+
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" >
+
+       <CheckBox
+           android:id="@+id/chkNextTime"
+           android:checked="true"
+           android:layout_marginLeft="20dp"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:text="不再显示" 
+          android:button="@drawable/checkbox"
+           android:gravity="left|center_vertical"
+          
+           />
+
+    <ImageView
+        android:id="@+id/iv_start_weibo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+      
+       android:layout_marginLeft="30dp"
+     android:layout_gravity="right|center_vertical"
+        android:background="@drawable/whats_new_start_btn"
+        android:focusable="true" />
+
+    </LinearLayout >
+</LinearLayout >

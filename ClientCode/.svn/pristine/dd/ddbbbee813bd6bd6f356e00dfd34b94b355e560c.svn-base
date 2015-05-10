@@ -1,0 +1,84 @@
+package com.surekam.greenguide.ui.fragment;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.WebView;
+
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.api.HttpExecuteJson;
+import com.surekam.greenguide.api._FakeX509TrustManager;
+import com.surekam.greenguide.api.HttpExecuteJson.httpReturnJson;
+import com.surekam.greenguide.common.BaseFragment;
+
+public class FragmentReport  extends BaseFragment {
+	
+	
+	private WebView webView;
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_context = getActivity();
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_report, null);
+	  
+		initView();
+		//getData();
+		return _view;
+	}
+
+	private void getData(){
+		
+		_FakeX509TrustManager.allowAllSSL();
+
+		HttpExecuteJson http = new HttpExecuteJson(
+				getActivity(), mCountListener);
+
+		//String url = "https://greenet.wedgenetworks.com/ssgmanager/rest/events/webfilter/detected";
+		
+		String url="https://greenet.wedgenetworks.com/ssgmanager/rest/policies/wf";
+
+		http.get(url, null);
+	}
+	
+	private httpReturnJson mCountListener = new httpReturnJson() {
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+		
+		//	UIHelper.ToastMessage(_context,"总条数=" +  result + "");
+		}
+	};
+
+	private void initView() {
+	
+		webView = (WebView) _view.findViewById(R.id.webReport);
+		webView.getSettings().setJavaScriptEnabled(true); // 允许使用javascript脚本语言
+		webView.getSettings().setBuiltInZoomControls(true); // 设置可以缩放
+		// 设置javaScript可用于操作MainActivity类
+		//webView.addJavascriptInterface(this, "MainActivity");
+		webView.loadUrl("file:///android_asset/test.htm");
+	   
+
+		
+	}
+
+}

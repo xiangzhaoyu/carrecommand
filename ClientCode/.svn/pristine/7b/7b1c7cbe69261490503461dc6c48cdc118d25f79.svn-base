@@ -1,0 +1,43 @@
+package com.surekam.greenguide.bean;
+
+public class ScheduleTime {
+	//24小时制度
+
+	int startHour = 0;
+	int startMin = 0;
+	int endHour = 0;
+	int endMin = 0;
+
+	public int getStartHour() {
+		return startHour;
+	}
+
+	public void setStartHour(int startHour) {
+		this.startHour = startHour;
+	}
+
+	public int getStartMin() {
+		return startMin;
+	}
+
+	public void setStartMin(int startMin) {
+		this.startMin = startMin;
+	}
+
+	public int getEndHour() {
+		return endHour;
+	}
+
+	public void setEndHour(int endHour) {
+		this.endHour = endHour;
+	}
+
+	public int getEndMin() {
+		return endMin;
+	}
+
+	public void setEndMin(int endMin) {
+		this.endMin = endMin;
+	}
+
+}

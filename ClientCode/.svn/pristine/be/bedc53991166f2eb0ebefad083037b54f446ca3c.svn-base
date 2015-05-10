@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal" >
+
+    <CheckBox
+        android:id="@+id/cb_1"
+        style="@style/week_left"
+        android:text="周一" />
+
+    <CheckBox
+        android:id="@+id/cb_2"
+        style="@style/week_middle"
+        android:text="周二" />
+
+    <CheckBox
+        android:id="@+id/cb_3"
+        style="@style/week_middle"
+        android:text="周三" />
+
+    <CheckBox
+        android:id="@+id/cb_4"
+        style="@style/week_middle"
+        android:text="周四" />
+
+    <CheckBox
+        android:id="@+id/cb_5"
+        style="@style/week_middle"
+        android:text="周五" />
+
+    <CheckBox
+        android:id="@+id/cb_6"
+        style="@style/week_middle"
+        android:text="周六" />
+
+    <CheckBox
+        android:id="@+id/cb_7"
+        style="@style/week_right"
+        android:text="周日" />
+
+</LinearLayout>

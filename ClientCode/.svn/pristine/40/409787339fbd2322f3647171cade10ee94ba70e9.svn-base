@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical" >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.0"
+        android:background="@drawable/frame_bg_small" >
+
+        <include layout="@layout/navigate_bar" />
+
+        <TextView
+            android:id="@+id/textView1"
+            style="@style/textView_size14_white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:padding="8dp"
+            android:text="通过添加时间规则来控制联网或者断网时间" />
+
+        <Button
+            android:id="@+id/time_bt_new_rule"
+            style="@style/textView_size16_yahei"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_gravity="right|bottom"
+            android:layout_marginBottom="8dp"
+            android:layout_marginRight="8dp"
+            android:background="@drawable/btn_white2"
+            android:text="  添加一条新规则  " />
+    </FrameLayout>
+
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2.0" >
+    </ListView>
+
+</LinearLayout>

@@ -1,0 +1,129 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.Arrays;
+
+import org.apache.http.entity.StringEntity;
+import org.apache.http.protocol.HTTP;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.ListView;
+
+import com.lidroid.xutils.http.RequestParams;
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.api.HttpExecuteJson;
+import com.surekam.greenguide.api.HttpExecuteJson.httpReturnJson;
+import com.surekam.greenguide.api._FakeX509TrustManager;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.ui.adapter.WhiteListAdapter;
+
+public class FragmentBlackList extends BaseFragment implements OnClickListener {
+	ListView _listView;
+
+	@Override
+	public void onClick(View arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_white_list, null);
+		_context = getActivity();
+
+		initView();
+		// createBlackList();
+		// getAllBlackList();
+		return _view;
+	}
+
+	String[] fakelist1 = new String[] { "www.baidu.com", "www.sina.com",
+			"www.chinaos.net", "www.weibo.com", "www.google.com",
+			"www.tudou.com", "www.youku.com", "www.souhu.com", "www.163.com",
+			"www.qq.com" };
+
+	private void initView() {
+		_listView = (ListView) _view.findViewById(R.id.white_list_view);
+		WhiteListAdapter _adapter = new WhiteListAdapter(_context,
+				Arrays.asList(fakelist1));
+		_listView.setAdapter(_adapter);
+		_adapter.notifyDataSetChanged();
+	}
+
+	private void createBlackList() {
+
+		_FakeX509TrustManager.allowAllSSL();
+
+		String content = "{\"protocolList\":[\"SMTP\",\"POP3\",\"IMAP\",\"HTTP\"],\"periodList\":[{\"repeatType\":\"EVERYDAY\",\"timezone\":null,\"startDay\":0,\"endDay\":0,\"startTime\":null,\"endTime\":null,\"urlList\":[],\"keywordList\":[],\"categoryList\":[]}],\"actionType\":\"BLOCK\",\"policyPath\":{\"srcAddress\":\"192.168.100.32\",\"srcName\":null,\"srcIsGroup\":false,\"dstAddress\":\"0.0.0.0/0\"},\"excludeType\":\"NONE\",\"scanRequest\":true,\"scanResponse\":true,\"serviceType\":\"UR\"}";
+
+		try {
+			JSONObject obj = new JSONObject(content);
+			JSONArray array = ((JSONObject) obj.getJSONArray("periodList").get(
+					0)).getJSONArray("urlList");
+			JSONObject obj1 = new JSONObject();
+			obj1.put("url", "www.baidu.com");
+			obj1.put("urlAccess", "DENY");
+
+			array.put(obj1);
+
+			HttpExecuteJson http = new HttpExecuteJson(getActivity(),
+					mCountListener);
+
+			String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/kw";
+
+			RequestParams params = new RequestParams();
+			params.addHeader("Content-Type", "application/json");
+			try {
+				params.setBodyEntity(new StringEntity(obj.toString(),
+						HTTP.UTF_8));
+
+			} catch (Exception ex) {
+
+			}
+
+			http.post(url, params);
+		} catch (Exception ex) {
+
+		}
+	}
+
+	private void getAllBlackList() {
+
+		_FakeX509TrustManager.allowAllSSL();
+
+		HttpExecuteJson http = new HttpExecuteJson(getActivity(),
+				mCountListener);
+
+		String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/ur/";
+
+		http.get(url, null);
+
+	}
+
+	private httpReturnJson mCountListener = new httpReturnJson() {
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+
+			// UIHelper.ToastMessage(_context,"总条数=" + result + "");
+		}
+	};
+
+}

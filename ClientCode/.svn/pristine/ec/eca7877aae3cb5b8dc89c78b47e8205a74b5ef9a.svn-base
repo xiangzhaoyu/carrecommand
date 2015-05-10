@@ -1,0 +1,67 @@
+package com.surekam.greenguide.ui.fragment;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.Button;
+
+import com.squareup.otto.Subscribe;
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.app.UIHelper;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.event.EditTimeRuleEvent;
+import com.surekam.greenguide.tools.MenuUtil;
+import com.surekam.greenguide.ui.activity.ActivityMain;
+
+public class FragmentTimeList extends BaseFragment {
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_context = getActivity();
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_time_list, null);
+		initTitle();
+		initView();
+		return _view;
+	}
+
+	private void initTitle() {
+		MenuUtil.setMenuBack(getActivity(), _view);
+		MenuUtil.setMenuTitle(_view, "上网时段");
+		MenuUtil.setMenuBackTransparent(_view);
+		MenuUtil.setMenuMore(getActivity(), _view, false);
+	}
+
+	private void initView() {
+		Button bt = (Button) _view.findViewById(R.id.time_bt_new_rule);
+		bt.setOnClickListener(mNewRule);
+	}
+
+	OnClickListener mNewRule = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			((ActivityMain) _context).addFragment(new FragmentTimeSet(),
+					"FragmentTimeSet");
+		}
+	};
+
+	@Subscribe
+	public void onEditTimeRuleRecived(EditTimeRuleEvent event) {
+		if (event != null) {
+			UIHelper.ToastMessage(_context, event.testTitle);
+		}
+
+	}
+
+}

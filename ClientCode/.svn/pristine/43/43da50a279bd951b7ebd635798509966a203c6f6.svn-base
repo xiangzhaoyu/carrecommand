@@ -1,0 +1,41 @@
+package com.surekam.greenguide.bean;
+
+public class PolicyPath {
+	String dstAddress;
+	String srcAddress;
+	boolean srcIsGroup;
+	String srcName;
+
+	public String getDstAddress() {
+		return dstAddress;
+	}
+
+	public void setDstAddress(String dstAddress) {
+		this.dstAddress = dstAddress;
+	}
+
+	public String getSrcAddress() {
+		return srcAddress;
+	}
+
+	public void setSrcAddress(String srcAddress) {
+		this.srcAddress = srcAddress;
+	}
+
+	public boolean getSrcIsGroup() {
+		return srcIsGroup;
+	}
+
+	public void setSrcIsGroup(boolean srcIsGroup) {
+		this.srcIsGroup = srcIsGroup;
+	}
+
+	public String getSrcName() {
+		return srcName;
+	}
+
+	public void setSrcName(String srcName) {
+		this.srcName = srcName;
+	}
+
+}

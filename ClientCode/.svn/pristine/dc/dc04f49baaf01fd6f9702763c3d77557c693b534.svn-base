@@ -1,0 +1,325 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import android.os.Bundle;
+import android.util.SparseIntArray;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.squareup.otto.Subscribe;
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.app.UIHelper;
+import com.surekam.greenguide.bean.Schedule;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.event.EditTimeRuleEvent;
+import com.surekam.greenguide.tools.ACache;
+import com.surekam.greenguide.tools.DebugUtil;
+import com.surekam.greenguide.tools.MenuUtil;
+import com.surekam.greenguide.tools.StringUtils;
+import com.surekam.greenguide.ui.view.MySurfaceView;
+import com.surekam.greenguide.ui.view.MySurfaceView.onValueChanged;
+
+public class FragmentTimeList extends BaseFragment {
+	MySurfaceView _surfaceView;
+	View _layoutEdit;
+
+	ACache _aCache;
+	String _saveTag = "timeList";
+
+	SparseIntArray _editTimeSchedule;
+
+	boolean _isWorkDay = true;
+	boolean _isDay = true;
+
+	Map<String, Schedule> _listSchedule = new HashMap<String, Schedule>();
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_context = getActivity();
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_time_list, null);
+		_view.setOnTouchListener(UIHelper.mTouchListner);
+
+		initTitle();
+		initView();
+		initData();
+		return _view;
+	}
+
+	private void initTitle() {
+		MenuUtil.setMenuBack(getActivity(), _view);
+		MenuUtil.setMenuTitle(_view, "上网时段");
+		// MenuUtil.setMenuBackTransparent(_view);
+		MenuUtil.setMenuMore(getActivity(), _view, false);
+	}
+
+	private void initView() {
+		_aCache = ACache.get(_context);
+
+		_layoutEdit = _view.findViewById(R.id.time_layout_edit);
+		_view.findViewById(R.id.time_bt_save).setOnClickListener(mSaveListener);
+		_view.findViewById(R.id.time_bt_cancel).setOnClickListener(
+				mCacleListener);
+		_view.findViewById(R.id.time_iv_day_night).setOnClickListener(
+				mDayNightListener);
+		_view.findViewById(R.id.time_tv_day_night_text).setOnClickListener(
+				mDayNightListener);
+
+		_view.findViewById(R.id.time_bt_day_night).setVisibility(View.GONE);
+
+		_surfaceView = (MySurfaceView) _view
+				.findViewById(R.id.time_surface_view);
+		_surfaceView.setOnValueChangeed(mValueListner);
+
+		((RadioButton) _view.findViewById(R.id.time_rb_workday))
+				.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+					@Override
+					public void onCheckedChanged(CompoundButton arg0,
+							boolean arg1) {
+						// TODO Auto-generated method stub
+						if (arg1) {
+							_isWorkDay = true;
+							_isDay = true;
+							changeSchedule(_isWorkDay, _isDay);
+						}
+					}
+				});
+
+		((RadioButton) _view.findViewById(R.id.time_rb_weekendday))
+				.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+					@Override
+					public void onCheckedChanged(CompoundButton arg0,
+							boolean arg1) {
+						// TODO Auto-generated method stub
+						if (arg1) {
+							_isWorkDay = false;
+							_isDay = true;
+							changeSchedule(_isWorkDay, _isDay);
+						}
+					}
+				});
+
+	}
+
+	private void initData() {
+
+		_editTimeSchedule = new SparseIntArray();
+		for (int i = 1; i <= 12; i++) {
+			_editTimeSchedule.put(i, 0);
+		}
+
+		// getSavedSchedule();
+
+		changeSchedule(_isWorkDay, _isDay);
+	}
+
+	public void getSavedSchedule() {
+		// _aCache.remove(_saveTag);
+		String json = _aCache.getAsString(_saveTag);
+		if (!StringUtils.isEmpty(json)) {
+			_listSchedule = new Gson().fromJson(json,
+					new TypeToken<Map<String, Schedule>>() {
+					}.getType());
+
+		}
+	}
+
+	onValueChanged mValueListner = new onValueChanged() {
+
+		@Override
+		public void onChanged() {
+			// TODO Auto-generated method stub
+			if (_layoutEdit.getVisibility() == View.GONE) {
+				_layoutEdit.setVisibility(View.VISIBLE);
+			}
+		}
+	};
+
+	// OnClickListener mNewRule = new OnClickListener() {
+	//
+	// @Override
+	// public void onClick(View arg0) {
+	// // TODO Auto-generated method stub
+	// ((ActivityMain) _context).addFragment(new FragmentTimeSet(),
+	// "FragmentTimeSet");
+	// }
+	// };
+
+	OnClickListener mDayNightListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			_isDay = !_isDay;
+
+			changeSchedule(_isWorkDay, _isDay);
+
+		}
+	};
+
+	OnClickListener mSaveListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			_layoutEdit.setVisibility(View.GONE);
+			_editTimeSchedule = _surfaceView.getValue();
+			String tag = _isWorkDay ? Schedule.TYPE_WORKDAY
+					: Schedule.TYPE_WEEKEND;
+
+			Schedule sch = getScheduleByTag(tag);
+
+			if (_isDay) {
+				sch.setDaySchedule(_editTimeSchedule);
+			} else {
+				sch.setNightSchedule(_editTimeSchedule);
+			}
+
+			_listSchedule.put(tag, sch);
+
+			Gson gs = new Gson();
+			String saveStr = gs.toJson(_listSchedule);
+
+			_aCache.put(_saveTag, saveStr);
+
+			DebugUtil.printDebugTag("save", gs.toJson(_editTimeSchedule));
+
+		}
+	};
+
+	OnClickListener mCacleListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			_layoutEdit.setVisibility(View.GONE);
+			_surfaceView.setValue(_editTimeSchedule);
+
+		}
+	};
+
+	@Subscribe
+	public void onEditTimeRuleRecived(EditTimeRuleEvent event) {
+		if (event != null) {
+			// UIHelper.ToastMessage(_context, event.testTitle);
+		}
+
+	}
+
+	private void changeDayAndNight(final boolean isDay) {
+		final ImageView iv = (ImageView) _view
+				.findViewById(R.id.time_iv_day_night);
+		Animation a = AnimationUtils
+				.loadAnimation(_context, R.anim.top_to_down);
+		a.setAnimationListener(new AnimationListener() {
+
+			@Override
+			public void onAnimationStart(Animation arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onAnimationEnd(Animation arg0) {
+				// TODO Auto-generated method stub
+				if (isDay) {
+					iv.setBackgroundResource(R.drawable.widget_w_0);
+				} else {
+					iv.setBackgroundResource(R.drawable.widget_w_3);
+				}
+
+				Animation b = AnimationUtils.loadAnimation(_context,
+						R.anim.down_top);
+				iv.startAnimation(b);
+			}
+		});
+
+		iv.startAnimation(a);
+
+	}
+
+	private void changeSchedule(boolean isWorkDay, boolean isDay) {
+		getSavedSchedule();
+
+		Schedule sch = getScheduleByTag(isWorkDay ? Schedule.TYPE_WORKDAY
+				: Schedule.TYPE_WEEKEND);
+		if (sch == null) {
+			sch = new Schedule();
+		}
+
+		SparseIntArray sp = isDay ? sch.getDaySchedule() : sch
+				.getNightSchedule();
+		if (sp == null)
+			sp = new SparseIntArray();
+		for (int i = 1; i <= 12; i++) {
+			if (sp.get(i) == 0) {
+				sp.put(i, 0);
+			}
+		}
+
+		_editTimeSchedule = sp;
+		// UI处理
+		ImageView iv = (ImageView) _view.findViewById(R.id.time_bt_day_night);
+
+		iv.setImageResource(_isDay ? R.drawable.icon_menu_daytime_n
+				: R.drawable.icon_menu_night_n);
+
+		TextView tv = (TextView) _view
+				.findViewById(R.id.time_tv_day_night_text);
+		tv.setText(_isDay ? "上午" : "下午");
+		tv.getPaint().setFakeBoldText(true);
+
+		_surfaceView.setValue(_editTimeSchedule);
+		changeDayAndNight(isDay);
+
+	}
+
+	private Schedule getScheduleByTag(String tag) {
+
+		Schedule sch;
+
+		sch = _listSchedule.get(tag);
+		if (sch == null) {
+			sch = new Schedule();
+			sch.setDayType(_isWorkDay ? Schedule.TYPE_WORKDAY
+					: Schedule.TYPE_WEEKEND);
+			_listSchedule.put(tag, sch);
+		}
+
+		return sch;
+	}
+	
+	
+
+}

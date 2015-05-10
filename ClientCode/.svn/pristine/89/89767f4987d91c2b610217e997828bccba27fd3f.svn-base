@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical" >
+
+    <include layout="@layout/navigate_bar" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone" >
+
+        <TextView
+            style="@style/textView_size14_white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:padding="8dp"
+            android:text="通过添加时间规则来控制联网或者断网时间" />
+
+        <Button
+            android:id="@+id/time_bt_new_rule"
+            style="@style/textView_size16_yahei"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_gravity="right|bottom"
+            android:layout_marginBottom="8dp"
+            android:layout_marginRight="8dp"
+            android:background="@drawable/btn_white2"
+            android:text="  添加一条新规则  "
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/common_list_category_bg"
+        android:orientation="horizontal" >
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.0"
+            android:gravity="center" >
+
+            <RadioGroup
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="horizontal"
+                android:padding="8dp" >
+
+                <RadioButton
+                    android:id="@+id/time_rb_workday"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/check_week_left"
+                    android:button="@null"
+                    android:checked="true"
+                    android:clickable="true"
+                    android:gravity="center"
+                    android:text="工作日"
+                    android:textColor="@drawable/week_text_color"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/time_rb_weekendday"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/check_week_right"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:text="休息日"
+                    android:textColor="@drawable/week_text_color"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/time_bt_advance"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="right|center_vertical"
+            android:background="@drawable/btn_white2"
+            android:text="推荐设置" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.0" >
+
+        <com.surekam.greenguide.ui.view.MySurfaceView
+            android:id="@+id/time_surface_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="80dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical" >
+
+            <ImageView
+                android:id="@+id/time_iv_day_night"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/widget_w_0" />
+
+            <TextView
+                android:id="@+id/time_tv_day_night_text"
+                style="@style/textView_size18_yahei"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/check_middle_normal"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="上午" />
+
+            <LinearLayout
+                android:id="@+id/time_layout_edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="8dp"
+                android:visibility="gone" >
+
+                <Button
+                    android:id="@+id/time_bt_save"
+                    style="@style/textView_size16_yahei"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8dp"
+                    android:background="@drawable/btn_green"
+                    android:text="  保存  " />
+
+                <Button
+                    android:id="@+id/time_bt_cancel"
+                    style="@style/textView_size16_yahei"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8dp"
+                    android:background="@drawable/btn_white2"
+                    android:text="  取消  " />
+            </LinearLayout>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/time_bt_day_night"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/icon_menu_daytime_n" />
+    </FrameLayout>
+
+    <TextView
+        style="@style/textView_size16_yahei"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/common_list_category_bg"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:text="每天上网总时长设置" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="8dp" >
+
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_white2"
+            android:text="-" />
+
+        <TextView
+            android:id="@+id/textView1"
+            style="@style/textView_size16_blue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/qihoo_textbox"
+            android:gravity="center"
+            android:text="3" />
+
+        <TextView
+            android:id="@+id/textView2"
+            style="@style/textView_size14_yahei"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="小时" />
+
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/btn_white2"
+            android:text="+" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp" >
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/wxts" />
+
+        <TextView
+            android:id="@+id/textView2"
+            style="@style/textView_size14_blue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="每天上网总时长不能超过设置的小时数,超过则不能上网 \n(*小时数设置为0则不限制上网时长)" />
+    </LinearLayout>
+
+</LinearLayout>

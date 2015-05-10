@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical" >
+
+    <include layout="@layout/navigate_bar" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="1dp"
+        android:background="@drawable/common_list_category_bg"
+        android:gravity="left|center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp" >
+
+        <TextView
+            style="@style/textView_size16_yahei"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="开始时间" />
+
+        <TextView
+            style="@style/textView_size16_yahei"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="13dp"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="结束时间" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:orientation="horizontal"
+        android:padding="8dp" >
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.0"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal" >
+
+            <kankan.wheel.widget.WheelView
+                android:id="@+id/start_hour"
+                android:layout_width="70dp"
+                android:layout_height="match_parent" />
+
+            <kankan.wheel.widget.WheelView
+                android:id="@+id/start_mins"
+                android:layout_width="70dp"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="13dp"
+            android:layout_weight="1.0"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal" >
+
+            <kankan.wheel.widget.WheelView
+                android:id="@+id/end_hour"
+                android:layout_width="70dp"
+                android:layout_height="match_parent" />
+
+            <kankan.wheel.widget.WheelView
+                android:id="@+id/end_mins"
+                android:layout_width="70dp"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <TextView
+            style="@style/textView_size16_yahei"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/common_list_category_bg"
+            android:gravity="left|center_vertical"
+            android:paddingLeft="8dp"
+            android:text="重复" >
+        </TextView>
+
+        <com.surekam.greenguide.ui.view.ViewWeekSelect
+            android:id="@+id/view_week_select"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp" />
+
+        <TextView
+            style="@style/textView_size16_yahei"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/common_list_category_bg"
+            android:gravity="left|center_vertical"
+            android:paddingLeft="8dp"
+            android:text="上网控制" >
+        </TextView>
+
+        <CheckBox
+            android:id="@+id/time_set_cb_net"
+            style="@style/textView_size16_yahei"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginBottom="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="13dp"
+            android:button="@drawable/btn_checkbox"
+            android:text="关闭上网" />
+    </LinearLayout>
+
+</LinearLayout>

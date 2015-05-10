@@ -1,0 +1,224 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import kankan.wheel.widget.OnWheelChangedListener;
+import kankan.wheel.widget.WheelView;
+import kankan.wheel.widget.adapters.NumericWheelAdapter;
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.SparseIntArray;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+
+import com.google.gson.Gson;
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.bean.DaySchedule;
+import com.surekam.greenguide.bean.BlockPeriodList;
+import com.surekam.greenguide.bean.TimeSchedule;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.event.BusProvider;
+import com.surekam.greenguide.event.EditTimeRuleEvent;
+import com.surekam.greenguide.tools.DebugUtil;
+import com.surekam.greenguide.tools.MenuUtil;
+import com.surekam.greenguide.ui.view.ViewWeekSelect;
+
+public class FragmentTimeAdvanceSet extends BaseFragment {
+	ViewWeekSelect _weekSelect;
+
+	int _startHour, _startMin, _endHour, _endMin;
+	// CheckBox _netCheck;
+
+	static BlockPeriodList _editData;
+
+	NumericWheelAdapter startDayAdapter;
+	NumericWheelAdapter timeAdapter;
+
+	WheelView startHours;
+	WheelView startMin;
+	WheelView endHours;
+	WheelView endMin;
+
+	public static FragmentTimeAdvanceSet newInstance(BlockPeriodList data) {
+		FragmentTimeAdvanceSet fragment = new FragmentTimeAdvanceSet();
+		_editData = data;
+		return fragment;
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_context = getActivity();
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_time_set, null);
+
+		initTitle();
+		initView();
+		return _view;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onActivityCreated(savedInstanceState);
+
+		initData();
+	}
+
+	private void initTitle() {
+		MenuUtil.setMenuBack(getActivity(), _view);
+		MenuUtil.setMenuTitle(_view, "新增上网时段设置");
+		MenuUtil.setMenuMore(getActivity(), _view, R.drawable.browser_open_dn,
+				mSaveListner);
+	}
+
+	private void initView() {
+
+		startDayAdapter = new NumericWheelAdapter(_context, 0, 23);
+		startDayAdapter.setItemResource(R.layout.list_item_text);
+		startDayAdapter.setItemTextResource(R.id.item_text);
+
+		timeAdapter = new NumericWheelAdapter(_context, 0, 59, "%02d");
+		timeAdapter.setItemResource(R.layout.list_item_text);
+		timeAdapter.setItemTextResource(R.id.item_text);
+
+		startHours = (WheelView) _view.findViewById(R.id.start_hour);
+		startHours.setViewAdapter(startDayAdapter);
+		startHours.addChangingListener(new OnWheelChangedListener() {
+			public void onChanged(WheelView wheel, int oldValue, int newValue) {
+				_startHour = newValue;
+			}
+		});
+
+		startMin = (WheelView) _view.findViewById(R.id.start_mins);
+		startMin.setViewAdapter(timeAdapter);
+		startMin.setCyclic(true);
+		startMin.addChangingListener(new OnWheelChangedListener() {
+			public void onChanged(WheelView wheel, int oldValue, int newValue) {
+				_startMin = newValue;
+			}
+		});
+
+		endHours = (WheelView) _view.findViewById(R.id.end_hour);
+		endHours.setViewAdapter(startDayAdapter);
+		endHours.addChangingListener(new OnWheelChangedListener() {
+			public void onChanged(WheelView wheel, int oldValue, int newValue) {
+				_endHour = newValue;
+			}
+		});
+
+		endMin = (WheelView) _view.findViewById(R.id.end_mins);
+		endMin.setViewAdapter(timeAdapter);
+		endMin.setCyclic(true);
+		endMin.addChangingListener(new OnWheelChangedListener() {
+			public void onChanged(WheelView wheel, int oldValue, int newValue) {
+				_endMin = newValue;
+			}
+		});
+
+		// final CheckBox cbNet = (CheckBox) _view
+		// .findViewById(R.id.time_set_cb_net);
+		// cbNet.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+		//
+		// @Override
+		// public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
+		// // TODO Auto-generated method stub
+		// if (arg1) {
+		// cbNet.setText("开启上网");
+		// } else {
+		// cbNet.setText("关闭上网");
+		// }
+		// }
+		// });
+
+		_weekSelect = (ViewWeekSelect) _view
+				.findViewById(R.id.view_week_select);
+
+		// _netCheck = (CheckBox) _view.findViewById(R.id.time_set_cb_net);
+
+	}
+
+	private void initData() {
+
+		if (_editData != null) {
+			int startHoure = _editData.getStartTime().getHours();
+			startHours.setCurrentItem(startHoure);
+
+			endHours.setCurrentItem(_editData.getEndTime().getHours());
+
+			_weekSelect
+					.setDatas(_editData.getStartDay(), _editData.getEndDay());
+		} else {
+			_editData = PolicyConvert.newPeriodList();
+		}
+
+	}
+
+	OnClickListener mSaveListner = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			save();
+		}
+	};
+
+	private void save() {
+		// UIHelper.ToastMessage(_context, "保存成功");
+		List<BlockPeriodList> datas = getData();
+
+		String sb = new Gson().toJson(datas);
+		DebugUtil.printDebugTag("WedGeos", sb);
+
+		BusProvider.getInstance().post(new EditTimeRuleEvent(datas));
+		((Activity) _context).onBackPressed();
+	}
+
+	private List<BlockPeriodList> getData() {
+		List<BlockPeriodList> result = new ArrayList<BlockPeriodList>();
+
+		BlockPeriodList schedule = new BlockPeriodList();
+
+		SparseIntArray days = _weekSelect.getSelectDay();
+		for (int i = 0; i < days.size(); i++) {
+			int key = days.keyAt(i);
+			int value = days.valueAt(i);
+
+			if (value == 0) {
+				if (schedule.getStartDay() > 0) {
+					result.add(schedule);
+				}
+				schedule = PolicyConvert.newPeriodList();
+			} else {
+				if (schedule.getStartDay() == 0) {
+					schedule.setStartDay(key);
+					schedule.setEndDay(key);
+					schedule.setStartTime(new TimeSchedule(_startHour,
+							_startMin));
+					schedule.setEndTime(new TimeSchedule(_endHour, _endMin));
+				} else {
+					schedule.setEndDay(key);
+				}
+			}
+
+			// 最后
+			if (i == days.size() - 1) {
+				if (schedule.getStartDay() > 0) {
+					result.add(schedule);
+				}
+			}
+
+		}
+
+		return result;
+	}
+}

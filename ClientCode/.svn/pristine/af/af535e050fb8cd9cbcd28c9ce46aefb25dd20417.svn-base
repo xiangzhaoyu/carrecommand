@@ -1,0 +1,96 @@
+package com.surekam.greenguide.bean;
+
+import com.google.gson.Gson;
+
+public class PeriodList {
+
+	// String repeatType;
+	int startDay;
+	int endDay;
+
+	// List<CategoryList> categoryList = new ArrayList<CategoryList>();
+
+	// String[] keywordList;
+
+	TimeSchedule startTime;
+	TimeSchedule endTime;
+	String timezone;
+
+	// String[] urlList;
+	//
+	// public String getRepeatType() {
+	// return repeatType;
+	// }
+	//
+	// public void setRepeatType(String repeatType) {
+	// this.repeatType = repeatType;
+	// }
+
+	public int getStartDay() {
+		return startDay;
+	}
+
+	public void setStartDay(int startDay) {
+		this.startDay = startDay;
+	}
+
+	public int getEndDay() {
+		return endDay;
+	}
+
+	public void setEndDay(int endDay) {
+		this.endDay = endDay;
+	}
+
+	// public List<CategoryList> getCategoryList() {
+	// return categoryList;
+	// }
+	//
+	// public void setCategoryList(List<CategoryList> categoryList) {
+	// this.categoryList = categoryList;
+	// }
+
+	public String getTimezone() {
+		return timezone;
+	}
+
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
+	}
+
+	// public String[] getKeywordList() {
+	// return keywordList;
+	// }
+	//
+	// public void setKeywordList(String[] keywordList) {
+	// this.keywordList = keywordList;
+	// }
+
+	// 说
+
+	public TimeSchedule getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(TimeSchedule startTime) {
+		this.startTime = startTime;
+	}
+
+	public TimeSchedule getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(TimeSchedule endTime) {
+		this.endTime = endTime;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		// StringBuilder sb = new StringBuilder();
+		// sb.append("日期:" + startDay + "-" + endDay);
+		// sb.append(" 时间:" + startTime.toString() + "-" + endTime.toString());
+		return new Gson().toJson(this);
+	}
+
+}

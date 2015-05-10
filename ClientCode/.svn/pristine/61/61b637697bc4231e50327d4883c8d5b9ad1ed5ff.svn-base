@@ -1,0 +1,115 @@
+package com.surekam.greenguide.ui.fragment;
+
+import kankan.wheel.widget.WheelView;
+import kankan.wheel.widget.adapters.NumericWheelAdapter;
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.app.UIHelper;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.event.BusProvider;
+import com.surekam.greenguide.event.EditTimeRuleEvent;
+import com.surekam.greenguide.tools.MenuUtil;
+import com.surekam.greenguide.ui.view.ViewWeekSelect;
+
+public class FragmentTimeSet extends BaseFragment {
+	ViewWeekSelect _weekSelect;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_context = getActivity();
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_time_set, null);
+
+		initTitle();
+		initView();
+		return _view;
+	}
+
+	private void initTitle() {
+		MenuUtil.setMenuBack(getActivity(), _view);
+		MenuUtil.setMenuTitle(_view, "新增上网时段设置");
+		MenuUtil.setMenuMore(getActivity(), _view, R.drawable.browser_open_dn,
+				mSaveListner);
+	}
+
+	private void initView() {
+
+		NumericWheelAdapter startDayAdapter = new NumericWheelAdapter(_context,
+				0, 23);
+		startDayAdapter.setItemResource(R.layout.list_item_text);
+		startDayAdapter.setItemTextResource(R.id.item_text);
+
+		NumericWheelAdapter timeAdapter = new NumericWheelAdapter(_context, 0,
+				59, "%02d");
+		timeAdapter.setItemResource(R.layout.list_item_text);
+		timeAdapter.setItemTextResource(R.id.item_text);
+
+		final WheelView startHours = (WheelView) _view
+				.findViewById(R.id.start_hour);
+		startHours.setViewAdapter(startDayAdapter);
+
+		final WheelView startMin = (WheelView) _view
+				.findViewById(R.id.start_mins);
+		startMin.setViewAdapter(timeAdapter);
+		startMin.setCyclic(true);
+
+		final WheelView endHours = (WheelView) _view
+				.findViewById(R.id.end_hour);
+		endHours.setViewAdapter(startDayAdapter);
+
+		final WheelView endMin = (WheelView) _view.findViewById(R.id.end_mins);
+		endMin.setViewAdapter(timeAdapter);
+		endMin.setCyclic(true);
+
+		final CheckBox cbNet = (CheckBox) _view
+				.findViewById(R.id.time_set_cb_net);
+		cbNet.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+			@Override
+			public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
+				// TODO Auto-generated method stub
+				if (arg1) {
+					cbNet.setText("开启上网");
+				} else {
+					cbNet.setText("关闭上网");
+				}
+			}
+		});
+		
+		_weekSelect = (ViewWeekSelect) _view.findViewById(R.id.view_week_select);
+
+	}
+
+	OnClickListener mSaveListner = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			save();
+		}
+	};
+
+	private void save() {
+		//UIHelper.ToastMessage(_context, "保存成功");
+		String str = _weekSelect.getSelectDayString();
+		
+		BusProvider.getInstance().post(new EditTimeRuleEvent(str));
+		((Activity) _context).onBackPressed();
+	}
+}

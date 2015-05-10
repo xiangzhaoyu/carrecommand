@@ -1,0 +1,1039 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.http.entity.StringEntity;
+import org.apache.http.protocol.HTTP;
+
+import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.SparseIntArray;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
+import android.widget.RadioButton;
+import android.widget.TextView;
+import android.widget.ViewSwitcher;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.lidroid.xutils.HttpUtils;
+import com.lidroid.xutils.exception.HttpException;
+import com.lidroid.xutils.http.RequestParams;
+import com.lidroid.xutils.http.ResponseStream;
+import com.lidroid.xutils.http.client.HttpRequest;
+import com.lidroid.xutils.util.LogUtils;
+import com.squareup.otto.Subscribe;
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.api.HttpExecute;
+import com.surekam.greenguide.api.HttpExecute.httpReturn;
+import com.surekam.greenguide.api.HttpExecuteJson;
+import com.surekam.greenguide.api.HttpExecuteJson.httpReturnJson;
+import com.surekam.greenguide.api._FakeX509TrustManager;
+import com.surekam.greenguide.app.AppContext;
+import com.surekam.greenguide.app.UIHelper;
+import com.surekam.greenguide.bean.BlockPeriodList;
+import com.surekam.greenguide.bean.PolicieClass;
+import com.surekam.greenguide.bean.PolicyPath;
+import com.surekam.greenguide.bean.Schedule;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.event.EditTimeRuleEvent;
+import com.surekam.greenguide.tools.ACache;
+import com.surekam.greenguide.tools.DebugUtil;
+import com.surekam.greenguide.tools.MenuUtil;
+import com.surekam.greenguide.ui.view.MyProgressDialog;
+import com.surekam.greenguide.ui.view.MySurfaceView;
+import com.surekam.greenguide.ui.view.MySurfaceView.onValueChanged;
+
+public class FragmentTimeSimpleSet extends BaseFragment {
+	MySurfaceView _surfaceView;
+	View _layoutEdit;
+
+	ACache _aCache;
+	String _saveTag = "timeList";
+
+	SparseIntArray _editTimeSchedule;
+
+	// int _isWorkDay = -1;// -1-工作日 -2-周末 -1具体天数
+
+	Map<Integer, Schedule> _listSchedule = new HashMap<Integer, Schedule>();
+	List<PolicieClass> _PolicyData; // 时间设置的
+	List<PolicieClass> _otherPolicyData; // 其它的设置
+
+	ViewSwitcher _viewSwitcher;
+
+	int _timeId = 21;
+	/**
+	 * 是否简单设置上学日和休息日
+	 */
+	Boolean _simpleType = true; // 是否工作日和周末的简单模式
+	/**
+	 * 是否白天
+	 */
+	boolean _isDay = true; // 是否白天
+	/**
+	 * 日期选择 -1 上学日 -2休息日 1-周日 2-6周一到周五 7-周六
+	 */
+	int _selectDay = -1;// 当前选中日期
+
+	Button _btSave;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_context = getActivity();
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_time_list, null);
+		_view.setOnTouchListener(UIHelper.mTouchListner);
+
+		initTitle();
+		initView();
+		initData();
+		return _view;
+	}
+
+	private void initTitle() {
+		MenuUtil.setMenuBack(getActivity(), _view);
+		MenuUtil.setMenuTitle(_view, "上网时段");
+		// MenuUtil.setMenuBackTransparent(_view);
+		MenuUtil.setMenuMore(getActivity(), _view, true, "推荐设置",
+				_advanceListner);
+	}
+
+	private void initView() {
+		_aCache = ACache.get(_context);
+
+		_layoutEdit = _view.findViewById(R.id.time_layout_edit);
+
+		_view.findViewById(R.id.time_bt_cancel).setOnClickListener(
+				_cancelListener);
+		_view.findViewById(R.id.time_iv_day_night).setOnClickListener(
+				mDayNightListener);
+		_view.findViewById(R.id.time_tv_day_night_text).setOnClickListener(
+				mDayNightListener);
+
+		_view.findViewById(R.id.time_bt_day_night).setVisibility(View.GONE);
+
+		// _view.findViewById(R.id.time_bt_update).setOnClickListener(
+		// _updateListener);
+
+		_btSave = (Button) _view.findViewById(R.id.time_bt_save);
+		_btSave.setText("保存");
+		_btSave.setOnClickListener(_saveListener);
+
+		initDayHeader();
+		changeSimpleType(true);
+	}
+
+	private void initDayHeader() {
+		_viewSwitcher = (ViewSwitcher) _view
+				.findViewById(R.id.view_day_switcher);
+
+		ImageView btAdvance = (ImageView) _view
+				.findViewById(R.id.view_day_bt_advance);
+		btAdvance.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				changeSimpleType(false);
+				_viewSwitcher.showNext();
+			}
+		});
+
+		ImageView btNormal = (ImageView) _view
+				.findViewById(R.id.view_day_bt_normal);
+		btNormal.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				changeSimpleType(true);
+				_viewSwitcher.showPrevious();
+			}
+		});
+
+		_surfaceView = (MySurfaceView) _view
+				.findViewById(R.id.time_surface_view);
+		_surfaceView.setOnValueChangeed(mValueListner);
+		//
+		// ((RadioButton) _view.findViewById(R.id.view_day_rb_workday))
+		// .setOnCheckedChangeListener(_daySelectListner);
+		// ((RadioButton) _view.findViewById(R.id.view_day_rb_weekendday))
+		// .setOnCheckedChangeListener(_daySelectListner);
+		//
+		// ((CheckBox) _view.findViewById(R.id.view_day_week_1))
+		// .setOnCheckedChangeListener(_daySelectListner);
+		// ((CheckBox) _view.findViewById(R.id.view_day_week_2))
+		// .setOnCheckedChangeListener(_daySelectListner);
+		// ((CheckBox) _view.findViewById(R.id.view_day_week_3))
+		// .setOnCheckedChangeListener(_daySelectListner);
+		// ((CheckBox) _view.findViewById(R.id.view_day_week_4))
+		// .setOnCheckedChangeListener(_daySelectListner);
+		// ((CheckBox) _view.findViewById(R.id.view_day_week_5))
+		// .setOnCheckedChangeListener(_daySelectListner);
+		// ((CheckBox) _view.findViewById(R.id.view_day_week_6))
+		// .setOnCheckedChangeListener(_daySelectListner);
+		// ((CheckBox) _view.findViewById(R.id.view_day_week_7))
+		// .setOnCheckedChangeListener(_daySelectListner);
+
+		((RadioButton) _view.findViewById(R.id.view_day_rb_workday))
+				.setOnClickListener(_dayClicked);
+		((RadioButton) _view.findViewById(R.id.view_day_rb_weekendday))
+				.setOnClickListener(_dayClicked);
+
+		((CheckBox) _view.findViewById(R.id.view_day_week_1))
+				.setOnClickListener(_dayClicked);
+		((CheckBox) _view.findViewById(R.id.view_day_week_2))
+				.setOnClickListener(_dayClicked);
+		((CheckBox) _view.findViewById(R.id.view_day_week_3))
+				.setOnClickListener(_dayClicked);
+		((CheckBox) _view.findViewById(R.id.view_day_week_4))
+				.setOnClickListener(_dayClicked);
+		((CheckBox) _view.findViewById(R.id.view_day_week_5))
+				.setOnClickListener(_dayClicked);
+		((CheckBox) _view.findViewById(R.id.view_day_week_6))
+				.setOnClickListener(_dayClicked);
+		((CheckBox) _view.findViewById(R.id.view_day_week_7))
+				.setOnClickListener(_dayClicked);
+
+	}
+
+	OnClickListener _dayClicked = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			int day = -1;
+
+			switch (arg0.getId()) {
+			case R.id.view_day_rb_workday:
+				day = -1;
+				break;
+			case R.id.view_day_rb_weekendday:
+				day = -2;
+				break;
+			case R.id.view_day_week_1:
+				day = 2;
+				break;
+			case R.id.view_day_week_2:
+				day = 3;
+				break;
+			case R.id.view_day_week_3:
+				day = 4;
+				break;
+			case R.id.view_day_week_4:
+				day = 5;
+				break;
+			case R.id.view_day_week_5:
+				day = 6;
+				break;
+			case R.id.view_day_week_6:
+				day = 7;
+				break;
+			case R.id.view_day_week_7:
+				day = 1;
+				break;
+
+			default:
+				break;
+			}
+
+			if (_selectDay != day) {
+				checked(true, day);
+			}
+
+		}
+	};
+
+	// OnCheckedChangeListener _daySelectListner = new OnCheckedChangeListener()
+	// {
+	// @Override
+	// public void onCheckedChanged(CompoundButton buttonView,
+	// boolean isChecked) {
+	// // TODO Auto-generated method stub
+	// int day = -1;
+	//
+	// switch (buttonView.getId()) {
+	// case R.id.view_day_rb_workday:
+	// day = -1;
+	// break;
+	// case R.id.view_day_rb_weekendday:
+	// day = -2;
+	// break;
+	// case R.id.view_day_week_1:
+	// day = 2;
+	// break;
+	// case R.id.view_day_week_2:
+	// day = 3;
+	// break;
+	// case R.id.view_day_week_3:
+	// day = 4;
+	// break;
+	// case R.id.view_day_week_4:
+	// day = 5;
+	// break;
+	// case R.id.view_day_week_5:
+	// day = 6;
+	// break;
+	// case R.id.view_day_week_6:
+	// day = 7;
+	// break;
+	// case R.id.view_day_week_7:
+	// day = 1;
+	// break;
+	//
+	// default:
+	// break;
+	// }
+	//
+	// checked(isChecked, day);
+	//
+	// }
+	// };
+
+	private void checked(boolean isChecked, int day) {
+
+		if (isChecked) {
+			_selectDay = day;
+			_isDay = true;
+
+			refreshView();
+
+		} else {
+
+		}
+	}
+
+	private void initData() {
+
+		_editTimeSchedule = new SparseIntArray();
+		for (int i = 0; i <= 23; i++) {
+			_editTimeSchedule.put(i, 0);
+		}
+
+		// 数据存放在本地
+		// String json = getSavedSchedule();
+		// if (!StringUtils.isEmpty(json)) {
+		// _PolicyData = new Gson().fromJson(json, PolicieClass.class);
+		// if (_PolicyData != null) {
+		// _listSchedule = PolicyConvert.policyListToMap(_PolicyData
+		// .getPeriodList());
+		// }
+		//
+		// _simpleType = true;
+		// _isDay = true;
+		// showSchedule(-1);
+		// } else {
+		GetPolicies();
+		// }
+
+	}
+
+	public String getSavedSchedule() {
+		// _aCache.remove(_saveTag);
+		String json = _aCache.getAsString(_saveTag);
+		return json;
+	}
+
+	onValueChanged mValueListner = new onValueChanged() {
+		@Override
+		public void onChanged() {
+			// TODO Auto-generated method stub
+			// if (_layoutEdit.getVisibility() == View.GONE) {
+			// _layoutEdit.setVisibility(View.VISIBLE);
+			// }
+
+			refreshSaveLayout(true, true);
+		}
+	};
+
+	// OnClickListener mNewRule = new OnClickListener() {
+	//
+	// @Override
+	// public void onClick(View arg0) {
+	// // TODO Auto-generated method stub
+	// ((ActivityMain) _context).addFragment(new FragmentTimeSet(),
+	// "FragmentTimeSet");
+	// }
+	// };
+
+	OnClickListener mDayNightListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			_isDay = !_isDay;
+
+			refreshView();
+		}
+	};
+
+	/**
+	 * 保存修改存放在_listSchedule
+	 */
+	OnClickListener _saveListener = new OnClickListener() {
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			_layoutEdit.setVisibility(View.GONE);
+			_editTimeSchedule = _surfaceView.getValue();
+
+			// Map<Integer, Schedule> newList = new HashMap<Integer,
+			// Schedule>();
+			List<Integer> checkList = getCheckList();
+
+			if (checkList != null && checkList.size() > 0) {
+
+				for (int day : checkList) {
+					Schedule sch = getScheduleByTag(day);
+					sch.setDaySchedule(_editTimeSchedule);
+					_listSchedule.put(day, sch);
+				}
+
+				Gson gs = new Gson();
+				String saveStr = gs.toJson(_listSchedule);
+				// _listSchedule = newList;
+
+				// 可以保存到网络
+				// _view.findViewById(R.id.time_bt_update).setVisibility(
+				// View.VISIBLE);
+
+				updatePolicy();
+
+				DebugUtil.printDebugTag("save", saveStr);
+			}
+
+		}
+	};
+
+	/**
+	 * 保存到网络
+	 */
+	OnClickListener _updateListener = new OnClickListener() {
+		@Override
+		public void onClick(View arg0) {
+			int visible = _btSave.getVisibility();
+
+			if (visible == View.VISIBLE) {
+				_btSave.performClick();
+			}
+
+			updatePolicy();
+
+		}
+
+	};
+
+	OnClickListener _cancelListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			_layoutEdit.setVisibility(View.GONE);
+			_surfaceView.setValue(_editTimeSchedule, _isDay);
+
+		}
+	};
+
+	@Subscribe
+	public void onEditTimeRuleRecived(EditTimeRuleEvent event) {
+		if (event != null) {
+			// UIHelper.ToastMessage(_context, event.testTitle);
+		}
+
+	}
+
+	private void changeSimpleType(boolean type) {
+		_simpleType = type;
+		_listSchedule.clear();
+		_isDay = true;
+
+		if (!type) {
+			for (int i = 1; i <= 7; i++) {
+				_listSchedule.put(i, new Schedule());
+			}
+
+			((CheckBox) _view.findViewById(R.id.view_day_week_1))
+					.setChecked(true);
+
+			checked(true, 2);
+
+		} else {
+
+			((RadioButton) _view.findViewById(R.id.view_day_rb_workday))
+					.setChecked(true);
+
+			_listSchedule.put(-1, new Schedule());
+			_listSchedule.put(-2, new Schedule());
+
+			checked(true, -1);
+		}
+
+		LogUtils.d("简单或者高级:" + type + "|" + new Gson().toJson(_listSchedule));
+
+	}
+
+	private void changeDayAndNight(final boolean isDay) {
+		final ImageView iv = (ImageView) _view
+				.findViewById(R.id.time_iv_day_night);
+		Animation a = AnimationUtils
+				.loadAnimation(_context, R.anim.top_to_down);
+		a.setAnimationListener(new AnimationListener() {
+
+			@Override
+			public void onAnimationStart(Animation arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onAnimationEnd(Animation arg0) {
+				// TODO Auto-generated method stub
+				if (isDay) {
+					iv.setBackgroundResource(R.drawable.widget_w_0);
+				} else {
+					iv.setBackgroundResource(R.drawable.widget_w_3);
+				}
+
+				Animation b = AnimationUtils.loadAnimation(_context,
+						R.anim.down_top);
+				iv.startAnimation(b);
+			}
+		});
+
+		iv.startAnimation(a);
+
+	}
+
+	private void refreshView() {
+
+		Schedule sch = getScheduleByTag(_selectDay);
+		if (sch == null) {
+			sch = new Schedule();
+		}
+
+		_editTimeSchedule = sch.getDaySchedule();
+		// UI处理
+		ImageView iv = (ImageView) _view.findViewById(R.id.time_bt_day_night);
+
+		iv.setImageResource(_isDay ? R.drawable.icon_menu_daytime_n
+				: R.drawable.icon_menu_night_n);
+
+		TextView tv = (TextView) _view
+				.findViewById(R.id.time_tv_day_night_text);
+		tv.setText(_isDay ? "上午" : "下午");
+		tv.getPaint().setFakeBoldText(true);
+
+		_surfaceView.setValue(_editTimeSchedule, _isDay);
+		changeDayAndNight(_isDay);
+
+	}
+
+	private Schedule getScheduleByTag(int type) {
+
+		Schedule sch;
+
+		sch = _listSchedule.get(type);
+		if (sch == null) {
+			sch = new Schedule();
+			sch.setDayNum(type);
+			_listSchedule.put(type, sch);
+		}
+
+		return sch;
+	}
+
+	private List<Integer> getCheckList() {
+		List<Integer> checkList = new ArrayList<Integer>();
+
+		if (_simpleType) {
+			RadioButton rb1 = (RadioButton) _view
+					.findViewById(R.id.view_day_rb_workday);
+
+			if (rb1.isChecked()) {
+				checkList.add(-1);
+			} else {
+				checkList.add(-2);
+			}
+
+		} else {
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_1))
+					.isChecked())
+				checkList.add(2);
+
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_2))
+					.isChecked())
+				checkList.add(3);
+
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_3))
+					.isChecked())
+				checkList.add(4);
+
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_4))
+					.isChecked())
+				checkList.add(5);
+
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_5))
+					.isChecked())
+				checkList.add(6);
+
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_6))
+					.isChecked())
+				checkList.add(7);
+			if (((CheckBox) _view.findViewById(R.id.view_day_week_7))
+					.isChecked())
+				checkList.add(1);
+
+		}
+
+		return checkList;
+
+	}
+
+	OnClickListener _advanceListner = new OnClickListener() {
+
+		@Override
+		public void onClick(View arg0) {
+			// TODO Auto-generated method stub
+			showPop(arg0);
+
+			// UIHelper.fragmentTimeAdvanceList(_context, _PolicyData);
+		}
+	};
+
+	PopupWindow mPopupWindow;
+	View mPopView;
+
+	public void showPop(View v) {
+		if (mPopView == null) {
+			mPopView = LayoutInflater.from(_context).inflate(
+					R.layout.view_pop_advance, null);
+
+			mPopView.findViewById(R.id.pop_advance_tv_1).setOnClickListener(
+					_popClicked);
+			mPopView.findViewById(R.id.pop_advance_tv_2).setOnClickListener(
+					_popClicked);
+			mPopView.findViewById(R.id.pop_advance_tv_3).setOnClickListener(
+					_popClicked);
+			mPopView.findViewById(R.id.pop_advance_tv_4).setOnClickListener(
+					_popClicked);
+
+			/** 初始化PopupWindow */
+			int width = AppContext.getInstance()._screenWidth / 2;
+
+			mPopupWindow = new PopupWindow(mPopView, width,// ViewGroup.LayoutParams.WRAP_CONTENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT);
+			mPopupWindow.setFocusable(true);// 取得焦点
+			mPopupWindow.setBackgroundDrawable(new BitmapDrawable());
+			/** 设置PopupWindow弹出和退出时候的动画效果 */
+			mPopupWindow.setAnimationStyle(R.style.MyDialogStyleTop);
+		}
+
+		// TextView tv = (TextView) mPopView.findViewById(R.id.tv_content);
+		// tv.setText(Html.fromHtml(getInfoHtml()));
+		mPopupWindow.showAsDropDown(v, 0, 0);
+	}
+
+	OnClickListener _popClicked = new OnClickListener() {
+		@Override
+		public void onClick(View arg0) {
+			mPopupWindow.dismiss();
+
+			String type = ((TextView) arg0).getText().toString();
+			refreshSche(type);
+
+		}
+	};
+
+	// 从网络获取政策
+	private void GetPolicies() {
+
+		_FakeX509TrustManager.allowAllSSL();
+		HttpExecute<List<PolicieClass>> http = new HttpExecute<List<PolicieClass>>(
+				getActivity(), mPoliciesListener);
+
+		http.setType(new TypeToken<List<PolicieClass>>() {
+		}.getType());
+
+		String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/tb";
+
+		// https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/wf/policy/28
+
+		http.get(url, null);
+
+	}
+
+	private httpReturn<List<PolicieClass>> mPoliciesListener = new httpReturn<List<PolicieClass>>() {
+
+		@Override
+		public void onSuccess(List<PolicieClass> result) {
+			// TODO Auto-generated method stub
+			AnalysisData(result);
+		}
+
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	/**
+	 * 把政策解析为时间表
+	 * 
+	 * @param result
+	 */
+	private void AnalysisData(List<PolicieClass> result) {
+		_PolicyData = new ArrayList<PolicieClass>();
+		_otherPolicyData = new ArrayList<PolicieClass>();
+
+		// 循环读取政策列表,符合的政策放在_PolicyData,其它的政策的保存在_otherPolicyData;
+		for (PolicieClass policie : result) {
+			if (policie.getActionType().equals("BLOCK")
+					&& policie.getPolicyPath().getSrcAddress()
+							.equals("0.0.0.0/0")) {
+				_PolicyData.add(policie);
+			} else {
+				_otherPolicyData.add(policie);
+			}
+		}
+
+		// 把_PolicyData的里面的阻挡规则转变为24小时时间制
+
+		_listSchedule = PolicyConvert.policiesToMap(_PolicyData);
+
+		LogUtils.d("初始化:" + new Gson().toJson(_listSchedule));
+
+		_selectDay = -1;
+
+		if (_listSchedule != null && _listSchedule.size() > 0) {
+			if (_listSchedule.get(-1) != null) {
+				if (_selectDay > 0)
+					_viewSwitcher.showPrevious();
+
+				_selectDay = -1;
+
+			} else {
+				if (_selectDay < 0)
+					_viewSwitcher.showPrevious();
+
+				_selectDay = 2;
+			}
+		}
+
+		_isDay = true;
+
+		refreshView();
+	}
+
+	private void updatePolicy() {
+		if (_PolicyData != null && _PolicyData.size() > 0) {
+
+			_FakeX509TrustManager.allowAllSSL();
+			HttpExecuteJson http = new HttpExecuteJson(getActivity(),
+					_deleteListner);
+
+			// String url =
+			// "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/tb/policy/";
+			// _PolicyData.getId();
+
+			String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/tb/";
+
+			// _aCache.put(_saveTag, new Gson().toJson(_PolicyData));
+
+			// DebugUtil.printDebugTag("保存字符串", new Gson().toJson(_PolicyData));
+			http.setProgressText("正在保存数据...");
+			http.delete(url, null);
+		} else {
+			new myTask().execute();
+		}
+
+	}
+
+	private httpReturnJson _deleteListner = new httpReturnJson() {
+
+		@Override
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+			new myTask().execute();
+			// UIHelper.ToastMessage(_context, result);
+		}
+
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+			// UIHelper.ToastMessage(_context, "删除数据:" + error + "|" + msg);
+			new myTask().execute();
+
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	class myTask extends AsyncTask<Void, String, String> {
+		MyProgressDialog mProgress;
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			mProgress = new MyProgressDialog(_context);
+			mProgress.show("正在保存数据...", false);
+			super.onPreExecute();
+		}
+
+		@Override
+		protected String doInBackground(Void... params) {
+			// TODO Auto-generated method stub
+			String returnStr = newPolicy();
+			return returnStr;
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			// TODO Auto-generated method stub
+			mProgress.dimiss();
+
+			if (result.length() == 0) {
+				// GetPolicies();
+
+				UIHelper.ToastMessage(_context, "保存成功!");
+			} else {
+				UIHelper.ToastMessage(_context, result);
+			}
+
+			super.onPostExecute(result);
+		}
+
+	};
+
+	private String newPolicy() {
+		String returnSucess = "";
+
+		_FakeX509TrustManager.allowAllSSL();
+		HttpUtils http = new HttpUtils();
+
+		String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/tb/";
+
+		List<PolicieClass> newPolicyList = new ArrayList<PolicieClass>();
+
+		// 把时间列表转换为block列表
+		List<BlockPeriodList> datas = PolicyConvert.MapToPolicy(_listSchedule);
+
+		// 新增阻挡政策,一个block变成一条政策
+		for (BlockPeriodList data : datas) {
+			PolicieClass newPolicy = getNewPolicy();
+			newPolicy.setBlockPeriod(data);
+
+			newPolicyList.add(newPolicy);
+		}
+
+		// 加入其它的政策
+		newPolicyList.addAll(_otherPolicyData);
+
+		// 循环保存政策
+		for (PolicieClass newPolicy : newPolicyList) {
+			// 同步保存
+			Gson gson = new GsonBuilder().serializeNulls().create();
+			String json = gson.toJson(newPolicy);
+			DebugUtil.printDebugTag("保存字符串", json);
+
+			RequestParams params = new RequestParams();
+			params.addHeader("Content-Type", "application/json");
+			try {
+				params.setBodyEntity(new StringEntity(json, HTTP.UTF_8));
+
+				ResponseStream stream = http.sendSync(
+						HttpRequest.HttpMethod.POST, url, params);
+				if (stream.getStatusCode() == 200
+						|| stream.getStatusCode() == 201) {
+
+					returnSucess = "";
+				} else {
+					returnSucess = "保存失败,返回错误:" + stream.getReasonPhrase();
+				}
+
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				returnSucess = "保存失败,转化失败!" + e.getMessage();
+				e.printStackTrace();
+				break;
+			} catch (HttpException e) {
+				// TODO Auto-generated catch block
+				returnSucess = "保存失败!" + e.getMessage();
+				e.printStackTrace();
+				break;
+			}
+
+		}
+
+		if (returnSucess.length() == 0) {
+			_PolicyData = newPolicyList;
+		}
+		return returnSucess;
+	}
+
+	// 创建新的政策
+	private PolicieClass getNewPolicy() {
+		PolicieClass newPolicy = new PolicieClass();
+
+		newPolicy.setExcludeType("NONE");
+
+		newPolicy.setServiceType("TB");
+		newPolicy.setActionType("BLOCK");
+
+		PolicyPath path = new PolicyPath();
+		path.setSrcAddress("0.0.0.0/0");
+		path.setSrcName(null);
+		path.setSrcIsGroup(false);
+		path.setDstAddress("0.0.0.0/0");
+		newPolicy.setPolicyPath(path);
+
+		// _PolicyData.setProtocolList(new String[] { "ALL" });
+		newPolicy.setPeriod(null);
+
+		newPolicy.setScanRequest(false);
+		newPolicy.setScanResponse(false);
+		newPolicy.setProtocolList(new String[] { "ALL" });
+
+		return newPolicy;
+	}
+
+	// 获取推荐设置,并且刷新设置
+	private void refreshSche(String settingStr) {
+		Map<Integer, Schedule> sches = fakeLimitList(settingStr);
+
+		if (sches != null) {
+			_listSchedule = sches;
+			// 刷新界面
+			refreshView();
+			// 能够保存
+			refreshSaveLayout(true, false);
+		}
+
+	}
+
+	// 获取推荐设置
+	private Map<Integer, Schedule> fakeLimitList(String settingStr) {
+		Map<Integer, Schedule> sches = new HashMap<Integer, Schedule>();
+		// 可以根据 _simpleType 判断是否简单模式
+		if (_simpleType) {
+			if (settingStr.equals("小学")) {
+				sches.put(-1, getNotInNet(18));
+				sches.put(-2, getNotInNet(18, 19));
+				// _isDay = false;
+
+			} else if (settingStr.equals("初中")) {
+				sches.put(-1, getNotInNet(18, 19));
+				sches.put(-2, getNotInNet(10, 18, 19, 20));
+				// _isDay = false;
+
+			} else if (settingStr.equals("高中")) {
+				sches.put(-1, getNotInNet(18, 19, 20));
+				sches.put(-2, getNotInNet(10, 11, 18, 19, 20, 21));
+				// _isDay = true;
+			} else {
+				sches.put(-1, new Schedule());
+				sches.put(-2, new Schedule());
+				// _isDay = true;
+			}
+		} else {
+			if (settingStr.equals("小学")) {
+				for (int i = 2; i <= 6; i++) {
+					sches.put(i, getNotInNet(18));
+				}
+				sches.put(1, getNotInNet(18, 19));
+				sches.put(7, getNotInNet(18, 19));
+
+			} else if (settingStr.equals("初中")) {
+				for (int i = 2; i <= 6; i++) {
+					sches.put(i, getNotInNet(18, 19));
+				}
+				sches.put(1, getNotInNet(10, 18, 19, 20));
+				sches.put(7, getNotInNet(10, 18, 19, 20));
+
+			} else if (settingStr.equals("高中")) {
+				for (int i = 2; i <= 6; i++) {
+					sches.put(i, getNotInNet(18, 19, 20));
+				}
+				sches.put(1, getNotInNet(10, 11, 18, 19, 20, 21));
+				sches.put(7, getNotInNet(10, 11, 18, 19, 20, 21));
+			} else {
+				for (int i = 1; i <= 7; i++) {
+					sches.put(i, new Schedule());
+				}
+
+			}
+		}
+
+		return sches;
+	}
+
+	// 创建时间表.并且根据可上网的小时返回时间表
+	private Schedule getNotInNet(int... hour) {
+		Schedule sche = new Schedule();
+		SparseIntArray daySchedule = new SparseIntArray();
+
+		for (int i = 0; i <= 23; i++) {
+			daySchedule.put(i, 0);
+		}
+
+		for (int i : hour) {
+			daySchedule.put(i, 1);
+		}
+
+		sche.setDaySchedule(daySchedule);
+
+		return sche;
+	}
+
+	private void refreshSaveLayout(boolean btSave, boolean btCancel) {
+		_layoutEdit.setVisibility(View.VISIBLE);
+		_btSave.setVisibility(btSave ? View.VISIBLE : View.INVISIBLE);
+		_view.findViewById(R.id.time_bt_cancel).setVisibility(
+				btCancel ? View.VISIBLE : View.INVISIBLE);
+
+	}
+
+}

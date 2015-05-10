@@ -1,0 +1,96 @@
+package com.surekam.greenguide.ui.adapter;
+
+import java.util.HashMap;
+import java.util.List;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.TextView;
+
+import com.surekam.greenguide.R;
+
+public class CategaryChooseAdapter extends BaseAdapter {
+	List<HashMap<String,String>>  _datas;
+	Context _context;
+
+	public CategaryChooseAdapter(Context context, List<HashMap<String,String>> datas) {
+		_context = context;
+		_datas = datas;
+	}
+
+	@Override
+	public int getCount() {
+		return _datas.size();
+	}
+
+	@Override
+	public HashMap<String,String> getItem(int position) {
+		// TODO Auto-generated method stub
+		return _datas.get(position);
+	}
+
+	@Override
+	public long getItemId(int position) {
+		// TODO Auto-generated method stub
+		return position;
+	}
+
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+		if (convertView == null) {
+			convertView = LayoutInflater.from(_context).inflate(
+					R.layout.list_item_choose_category, null);
+		}
+        final int curPosition=position;
+		String data = getItem(position).get("name");
+		if (data != null) {
+			TextView tv = (TextView) convertView
+					.findViewById(R.id.list_item_application_content);
+			CheckBox iv = (CheckBox) convertView
+					.findViewById(R.id.list_item_application_checked);
+			
+			
+			if(getItem(curPosition).get("choosed").equals("y")){
+				
+				iv.setChecked(true);
+			}
+			else
+			{
+				iv.setChecked(false);
+			}
+			
+			iv.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+
+				@Override
+				public void onCheckedChanged(CompoundButton buttonView,
+						boolean isChecked) {
+					// TODO Auto-generated method stub
+					if(isChecked){
+						
+						getItem(curPosition).put("choosed", "y");
+					}
+					else
+					{
+						
+						getItem(curPosition).put("choosed", "n");
+					}
+					
+				}
+				
+			});
+
+			tv.setText(data);
+
+		}
+
+		return convertView;
+
+	}
+
+}

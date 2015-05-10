@@ -1,0 +1,345 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.entity.StringEntity;
+import org.apache.http.protocol.HTTP;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.ListView;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.lidroid.xutils.http.RequestParams;
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.api.HttpExecuteJson;
+import com.surekam.greenguide.api.HttpExecuteJson.httpReturnJson;
+import com.surekam.greenguide.api._FakeX509TrustManager;
+import com.surekam.greenguide.app.UIHelper;
+import com.surekam.greenguide.bean.PolicieClass;
+import com.surekam.greenguide.bean.UrlClass;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.tools.DebugUtil;
+import com.surekam.greenguide.ui.adapter.BlackListAdapter;
+import com.surekam.greenguide.ui.view.MyProgressDialog;
+import com.surekam.greenguide.widge.AdvancedAutoCompleteTextView;
+
+public class FragmentBlackList extends BaseFragment implements OnClickListener {
+	ListView _listView;
+	PolicieClass _policyData = new PolicieClass();
+	List<UrlClass> _urlList = new ArrayList<UrlClass>();
+
+	BlackListAdapter _adapter;
+
+	Boolean _isEditChanged = false;
+	AdvancedAutoCompleteTextView _editText;
+
+	MyProgressDialog _progressDialog;
+
+	@Override
+	public void onClick(View arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_white_list, null);
+		_context = getActivity();
+
+		initView();
+		// createBlackList();
+
+		return _view;
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		// 判断当前fragment是否显示
+		if (_view != null && getUserVisibleHint() && _urlList.size() == 0) {
+			getAllBlackList();
+		}
+	}
+
+	@Override
+	public void setUserVisibleHint(boolean isVisibleToUser) {
+		// TODO Auto-generated method stub
+		super.setUserVisibleHint(isVisibleToUser);
+		if (isVisibleToUser) {
+			// 相当于Fragment的onResume
+			if (_view != null && getUserVisibleHint() && _urlList.size() == 0) {
+				getAllBlackList();
+			}
+
+		} else {
+			// 相当于Fragment的onPause
+		}
+	}
+
+	String[] fakelist1 = new String[] { "www.baidu.com"};
+
+	private void initView() {
+		_progressDialog = new MyProgressDialog(_context);
+
+		_listView = (ListView) _view.findViewById(R.id.white_list_view);
+		_adapter = new BlackListAdapter(_context, _urlList);
+		_listView.setAdapter(_adapter);
+		_adapter.notifyDataSetChanged();
+
+		_view.findViewById(R.id.white_list_iv_add).setOnClickListener(
+				_addListener);
+		_view.findViewById(R.id.btn_submit).setOnClickListener(
+				_saveListener);
+
+		_editText = (AdvancedAutoCompleteTextView) _view
+				.findViewById(R.id.search);
+		_editText.setData(fakelist1);
+		_editText.setThreshold(0);
+	}
+
+	private void getAllBlackList() {
+
+		_FakeX509TrustManager.allowAllSSL();
+
+		HttpExecuteJson http = new HttpExecuteJson(getActivity(),
+				mCountListener);
+
+		String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/ur";
+		http.setProgressText("正在获取黑名单数据");
+		
+		http.get(url, null);
+
+	}
+
+	private httpReturnJson mCountListener = new httpReturnJson() {
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+			
+			if (result != null) {
+				anlyzeData(result);
+			}
+		}
+	};
+
+	private void anlyzeData(String result) {
+		List<PolicieClass> rt = null;
+		// 解析类型
+		try {
+			rt = new Gson().fromJson(result,
+					new TypeToken<List<PolicieClass>>() {
+					}.getType());
+		} catch (Exception e) {
+			// 类型转换错误异常处理
+			DebugUtil.printDebugTag("Gson解析错误", e.getMessage() + "");
+			return;
+		}
+
+		if (rt != null) {
+			for (PolicieClass pc : rt) {
+				String type = pc.getServiceType();
+				String actionType = pc.getActionType();
+
+				if (type.equals("UR") && actionType.equals("BLOCK")) {
+					_policyData = pc;
+					refreshUI();
+					break;
+				}
+
+			}
+
+		}
+
+	}
+
+	private void refreshUI() {
+		if (_policyData == null)
+			return;
+
+		if (_policyData.getPeriod() != null
+				) {
+			_urlList = _policyData.getPeriod().getUrlList();
+		}
+
+		if (_urlList == null)
+			return;
+
+		refreshList();
+
+	}
+
+	public void refreshList() {
+		_adapter.setData(_urlList);
+		_adapter.notifyDataSetChanged();
+	}
+
+	OnClickListener _addListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			String text = _editText.getText();
+			
+
+			boolean ibFind = false;
+			for (UrlClass url : _urlList) {
+				if (url.getUrl().equals(text)) {
+					ibFind = true;
+				}
+			}
+
+			if (ibFind) {
+				UIHelper.ToastMessage(_context, "该关键字已存在!");
+				_editText.setText("");
+				_editText.requestFocus();
+			} else {
+				UrlClass url = new UrlClass(text);
+				_urlList.add(url);
+				refreshList();
+				_editText.setText("");
+			}
+
+		}
+	};
+
+	OnClickListener _saveListener = new OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			updateBlackList();
+		}
+	};
+
+	private void updateBlackList() {
+		
+
+		if (_policyData != null && _policyData.getId() > 0) {
+			DebugUtil.printDebugTag("删除", "先删除黑名单" + _policyData.getId());
+
+			_FakeX509TrustManager.allowAllSSL();
+			HttpExecuteJson http = new HttpExecuteJson(getActivity(),
+					_deleteListener);
+
+			String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/ur";
+			DebugUtil.printDebugTag("删除黑名单", url);
+
+			http.setProgressText("正在获取黑名单数据");
+			http.deleteWithReturn(url, null);
+		} else {
+			DebugUtil.printDebugTag("保存", "直接保存黑名单");
+			saveBlackList();
+		}
+
+	}
+
+	private httpReturnJson _deleteListener = new httpReturnJson() {
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+			DebugUtil.printDebugTag("保存", "删除黑名单失败" + msg);
+			UIHelper.ToastMessage(_context, "删除失败!");
+			
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+			
+			saveBlackList();
+		}
+	};
+
+	private void saveBlackList() {
+		if (_urlList == null || _urlList.size() == 0) {
+		
+			return;
+		}
+
+		_FakeX509TrustManager.allowAllSSL();
+
+		String content = "{\"protocolList\":[\"SMTP\",\"POP3\",\"IMAP\",\"HTTP\"],\"period\":{\"repeatType\":\"EVERYDAY\",\"timezone\":null,\"startDay\":0,\"endDay\":0,\"startTime\":null,\"endTime\":null,\"urlList\":[],\"keywordList\":[],\"categoryList\":[]},\"actionType\":\"BLOCK\",\"policyPath\":{\"srcAddress\":\"0.0.0.0/0\",\"srcName\":null,\"srcIsGroup\":false,\"dstAddress\":\"0.0.0.0/0\"},\"excludeType\":\"NONE\",\"scanRequest\":true,\"scanResponse\":true,\"serviceType\":\"UR\"}";
+
+		try {
+			JSONObject obj = new JSONObject(content);
+			JSONArray array = obj.getJSONObject("period").getJSONArray("urlList");
+
+			for (UrlClass url : _urlList) {
+				JSONObject obj1 = new JSONObject();
+				obj1.put("url", url.getUrl());
+				obj1.put("urlAccess", "DENY");
+				array.put(obj1);
+			}
+
+			HttpExecuteJson http = new HttpExecuteJson(getActivity(),
+					msaveListener);
+			http.setProgressText("正在存储黑名单数据");
+
+			String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/ur";
+
+			RequestParams params = new RequestParams();
+			params.addHeader("Content-Type", "application/json");
+			try {
+				params.setBodyEntity(new StringEntity(obj.toString(),
+						HTTP.UTF_8));
+
+			} catch (Exception ex) {
+
+			}
+			
+			http.post(url, params);
+		} catch (Exception ex) {
+
+		}
+	}
+
+	private httpReturnJson msaveListener = new httpReturnJson() {
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+		
+			UIHelper.ToastMessage(_context, "保存失败!");
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+			// _editText.setText("");
+			
+			DebugUtil.printDebugTag("保存", "新增黑名单成功");
+			UIHelper.ToastMessage(_context, "保存成功!");
+			//getAllBlackList();
+		}
+	};
+
+}

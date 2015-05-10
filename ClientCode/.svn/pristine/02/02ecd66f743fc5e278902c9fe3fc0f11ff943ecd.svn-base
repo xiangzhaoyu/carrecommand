@@ -1,0 +1,14 @@
+package com.surekam.greenguide.event;
+
+import java.util.List;
+
+import com.surekam.greenguide.bean.BlockPeriodList;
+
+public class EditTimeRuleEvent {
+	public List<BlockPeriodList> data;
+
+	public EditTimeRuleEvent(List<BlockPeriodList> data) {
+		this.data = data;
+	}
+
+}

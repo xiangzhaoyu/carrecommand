@@ -1,0 +1,165 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.tools.MenuUtil;
+import com.surekam.greenguide.ui.activity.ActivityWhiteList;
+import com.surekam.greenguide.widge.ViewRadioGroup;
+import com.surekam.greenguide.widge.ViewRadioGroup.onSelectedListener;
+
+public class FragmentWhiteListAdvance extends BaseFragment {
+
+	List<Fragment> _fragmentList = new ArrayList<Fragment>();
+	ViewRadioGroup _tabIndicate;
+	ViewPager _viewPager;
+	MyAdapter _adapter;
+
+	String[] titles = new String[] { "分类过滤",  "黑名单", "白名单", "关键字" };
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_main_blog, null);
+		_context = getActivity();
+
+		return _view;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onActivityCreated(savedInstanceState);
+
+		initTitle();
+		initView();
+	}
+
+	private void initTitle() {
+		// ImageView leftBtn = (ImageView) _view
+		// .findViewById(R.id.topbar_left_btn);
+		// leftBtn.setVisibility(View.VISIBLE);
+		// ((TextView)
+		// _view.findViewById(R.id.topbar_title)).setText(titles[0]);
+		//
+		//
+		MenuUtil.setMenuBack(getActivity(), _view);
+		MenuUtil.setMenuTitle(_view, titles[0]);
+		
+	
+		// MenuUtil.setMenuBackTransparent(_view);
+		MenuUtil.setMenuMore(getActivity(), _view, false);
+		
+		MenuUtil.setMenuMore(getActivity(), _view, true, "设置",new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+		
+					((ActivityWhiteList) _context).addFragment(new FragmentWhiteListSet(),
+							"FragmentWhiteListSet");
+				
+			}
+		} );
+		
+		
+		
+
+	}
+
+	private void initView() {
+
+		_tabIndicate = (ViewRadioGroup) _view.findViewById(R.id.blog_tap);
+		_tabIndicate.setRadioButtonText(titles);
+		_tabIndicate.setSelectChangedListener(new onSelectedListener() {
+			@Override
+			public void onSelectedChanged(int whitch) {
+				// TODO Auto-generated method stub
+				_viewPager.setCurrentItem(whitch - 1);
+			}
+		});
+
+		_viewPager = (ViewPager) _view.findViewById(R.id.blog_viewpager);
+
+		_fragmentList.add(new FragmentChooseCategory());
+		
+		_fragmentList.add(new FragmentBlackList());
+		_fragmentList.add(new FragmentWhiteList());
+		_fragmentList.add(new FragmentKeyword());
+
+		_adapter = new MyAdapter(getChildFragmentManager());
+		_viewPager.setAdapter(_adapter);
+
+		_viewPager.setSaveEnabled(false);
+
+		_viewPager.requestFocus();
+
+		_viewPager.setOnPageChangeListener(new OnPageChangeListener() {
+
+			@Override
+			public void onPageSelected(int arg0) {
+				// TODO Auto-generated method stub
+				String title = titles[arg0];
+
+				_tabIndicate.setIndex(arg0);
+
+				((TextView) _view.findViewById(R.id.topbar_title))
+						.setText(title);
+
+			}
+
+			@Override
+			public void onPageScrolled(int arg0, float arg1, int arg2) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onPageScrollStateChanged(int arg0) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
+		_viewPager.setCurrentItem(0);
+	}
+
+	public class MyAdapter extends FragmentPagerAdapter {
+		public MyAdapter(FragmentManager fm) {
+			super(fm);
+		}
+
+		@Override
+		public int getCount() {
+			return _fragmentList.size();
+		}
+
+		@Override
+		public Fragment getItem(int position) {
+			return _fragmentList.get(position);
+		}
+
+		@Override
+		public void destroyItem(ViewGroup container, int position, Object object) {
+			// 注释自带的销毁方法防止页面被销毁
+			// 这个方法是重点
+			// super.destroyItem(container, position, object);
+		}
+	}
+
+}

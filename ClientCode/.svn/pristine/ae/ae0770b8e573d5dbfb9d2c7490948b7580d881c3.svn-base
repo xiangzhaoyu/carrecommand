@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/frame_bg_small"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+        <include layout="@layout/navigate_bar" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp" >
+
+            <TextView
+                style="@style/textView_size14_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="在此界面绑定手机或者宽带账号" />
+
+            <Button
+                android:id="@+id/device_list_bt_add_divice"
+                style="@style/textView_size14_yahei"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_gravity="right"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/btn_white2"
+                android:text="添加绑定设备" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        android:orientation="vertical"
+        android:padding="8dp" >
+
+        <com.surekam.greenguide.ui.view.ViewDevice
+            android:id="@+id/tv_device"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+</LinearLayout>

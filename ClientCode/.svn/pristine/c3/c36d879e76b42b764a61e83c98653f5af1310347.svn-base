@@ -1,0 +1,340 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import org.apache.http.entity.StringEntity;
+import org.apache.http.protocol.HTTP;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ListView;
+
+import com.lidroid.xutils.http.RequestParams;
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.api.HttpExecuteJson;
+import com.surekam.greenguide.api.HttpExecuteJson.httpReturnJson;
+import com.surekam.greenguide.api._FakeX509TrustManager;
+import com.surekam.greenguide.app.UIHelper;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.tools.DebugUtil;
+import com.surekam.greenguide.ui.adapter.CategaryChooseAdapter;
+
+public class FragmentChooseCategory  extends  BaseFragment implements OnClickListener {
+	ListView _listView;
+	CategaryChooseAdapter _adapter;
+	List<HashMap<String,String>> categorylist=new ArrayList<HashMap<String,String>>();
+
+
+	@Override
+	public void onClick(View arg0) {
+		// TODO Auto-generated method stub
+	
+		switch(arg0.getId()){
+		
+		case R.id.btn_submit:{
+			submit();
+			break;
+		}
+		case R.id.btn_choose_all:{
+			chooseAll();
+			
+			break;
+		}
+		case R.id.btn_choose_clear:{
+			chooseClear();
+			break;
+		}
+		
+		default: break;
+		
+		
+		}
+		
+
+	}
+   
+	private void submit(){
+		
+		try
+		{
+			
+			
+		    JSONObject obj=new JSONObject("{\"protocolList\":[\"HTTP\"],\"periodList\":[{\"repeatType\":\"EVERYDAY\",\"startDay\":0,\"endDay\":0,\"categoryList\":[],\"startTime\":null,\"endTime\":null,\"timezone\":null}],\"actionType\":\"DETECT\",\"policyPath\":{\"dstAddress\":\"0.0.0.0/0\",\"srcAddress\":\"0.0.0.0/0\",\"srcIsGroup\":false,\"srcName\":null},\"excludeType\":\"NONE\",\"scanRequest\":true,\"scanResponse\":true,\"serviceType\":\"WF\"}");
+		    JSONArray categories=((JSONObject)obj.getJSONArray("periodList").get(0)).getJSONArray("categoryList");
+		    
+		    
+		   for(int i=0;i<categorylist.size();i++){
+			 
+			 if(categorylist.get(i).get("choosed").equals("y"))
+			 {
+			   
+		       JSONObject categoryobj=new JSONObject("{\"id\":0,\"preloadId\":100,\"categoryName\":\"\",\"description\":\"\",\"data\":\"\",\"used\":false}"); 
+		       categoryobj.put("categoryName", categorylist.get(i).get("categoryName"));
+		       categoryobj.put("data", categorylist.get(i).get("data"));
+		       categoryobj.put("id", categorylist.get(i).get("id"));
+		       categories.put(categoryobj);
+			 }
+		   }
+		   
+		   
+		   _FakeX509TrustManager.allowAllSSL();
+
+			HttpExecuteJson http = new HttpExecuteJson(
+					getActivity(), mCountListener);
+
+			String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/wf";
+
+			RequestParams params=new RequestParams();
+			params.addHeader("Content-Type", "application/json");
+			 try
+			 {
+				 params.setBodyEntity(new StringEntity(obj.toString(),HTTP.UTF_8));
+			   
+			 }
+			 catch(Exception ex)
+			 {
+				 
+				 
+			 }
+		    http.delete(url, null);
+			http.post(url, params);
+		
+		}
+		catch(Exception ex){
+			
+			DebugUtil.printActivityTag(_context);
+			
+		}
+		
+		
+	}
+	
+	private httpReturnJson mCountListener = new httpReturnJson() {
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+			DebugUtil.printDebugTag("categoryerror", msg);
+			UIHelper.ToastMessage(_context, "设置失败，请重新设置" );
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+		
+			UIHelper.ToastMessage(_context, "设置成功" );
+		}
+	};
+	
+	
+	private void chooseAll(){
+		
+		
+		for(int i=0;i<categorylist.size();i++){
+			
+			  categorylist.get(i).put("choosed", "y");
+		}
+		_adapter.notifyDataSetChanged();
+	}
+	private void chooseClear(){
+		for(int i=0;i<categorylist.size();i++){
+			
+			  categorylist.get(i).put("choosed", "n");
+		}
+		_adapter.notifyDataSetChanged();
+	}
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_application_filter, null);
+		_context = getActivity();
+
+		initView();
+		// createWhiteList();
+	
+		return _view;
+	}
+
+	
+	
+	private void initView() {
+		
+		
+		initData();
+		_listView = (ListView) _view.findViewById(R.id.white_list_view);
+		 _adapter = new CategaryChooseAdapter(_context,
+				categorylist);
+		_listView.setAdapter(_adapter);
+		
+		Button btnsubmit=(Button)_view.findViewById(R.id.btn_submit);
+		btnsubmit.setOnClickListener(this);
+		
+		Button btnclear=(Button)_view.findViewById(R.id.btn_choose_clear);
+		btnclear.setOnClickListener(this);
+		
+
+		Button btnall=(Button)_view.findViewById(R.id.btn_choose_all);
+		btnall.setOnClickListener(this);
+		
+		
+	
+		
+	}
+	
+	private void initData(){
+		
+		HashMap<String,String> map=new HashMap<String,String>();
+		map.put("id", "21");
+		map.put("data", "106");
+		map.put("name","在线聊天");
+		map.put("categoryName", "Chat");
+	   map.put("choosed", "y");
+		categorylist.add(map);
+		
+//		map=new HashMap<String,String>();
+//		map.put("data", "110");
+//		map.put("name","毒品");
+//		map.put("categoryName", "Drugs");
+//		 map.put("choosed", "y");
+//		categorylist.add(map);
+     
+		map=new HashMap<String,String>();
+		map.put("id", "27");
+		map.put("data", "116");
+		map.put("name","游戏");
+		map.put("categoryName", "Games");
+		 map.put("choosed", "y");
+		categorylist.add(map);
+		
+//		map=new HashMap<String,String>();
+//		map.put("data", "115");
+//		map.put("name","博彩赌博");
+//		map.put("categoryName", "Gambling");
+//		 map.put("choosed", "y");
+//		categorylist.add(map);
+		
+		map=new HashMap<String,String>();
+		map.put("id", "31");
+		map.put("data", "112");
+		map.put("name","娱乐");
+		map.put("categoryName", "Entertainment");
+		 map.put("choosed", "y");
+		categorylist.add(map);
+		
+		map=new HashMap<String,String>();
+		map.put("id", "40");
+		map.put("data", "136");
+		map.put("name","在线购物");
+		map.put("categoryName", "Online Shopping");
+		 map.put("choosed", "y");
+		categorylist.add(map);
+		
+//		map=new HashMap<String,String>();
+//		map.put("data", "139");
+//		map.put("name","政治");
+//		map.put("categoryName", "Politics Opinion");
+//		 map.put("choosed", "y");
+//		categorylist.add(map);
+		
+		map=new HashMap<String,String>();
+		map.put("id", "42");
+		map.put("data", "138");
+		map.put("name","P2P下载");
+		map.put("categoryName", "P2P File Sharing");
+		 map.put("choosed", "y");
+		categorylist.add(map);
+		
+		map=new HashMap<String,String>();
+		map.put("id", "43");
+		map.put("data", "141");
+		map.put("name","门户网站");
+		map.put("categoryName", "Portal Sites");
+		 map.put("choosed", "y");
+		categorylist.add(map);
+		
+		map=new HashMap<String,String>();
+		map.put("id", "45");
+		map.put("data", "143");
+		map.put("name","宗教");
+		map.put("categoryName", "Religion Ideologies");
+		 map.put("choosed", "y");
+		categorylist.add(map);
+		
+		map=new HashMap<String,String>();
+		map.put("id", "47");
+		map.put("data", "129");
+		map.put("name","视频电影");
+		map.put("categoryName", "Media Downloads");
+		 map.put("choosed", "y");
+		categorylist.add(map);
+		
+		map=new HashMap<String,String>();
+		map.put("id", "55");
+		map.put("data", "153");
+		map.put("name","暴力");
+		map.put("categoryName", "Violence");
+		 map.put("choosed", "y");
+		categorylist.add(map);
+		
+//		map=new HashMap<String,String>();
+//		map.put("data", "151");
+//		map.put("name","烟草");
+//		map.put("categoryName", "Tobacco");
+//		 map.put("choosed", "y");
+//		categorylist.add(map);
+//		
+//		map=new HashMap<String,String>();
+//		map.put("data", "162");
+//		map.put("name","黄色");
+//		map.put("categoryName", "Sexual Materials");
+//		 map.put("choosed", "y");
+//		categorylist.add(map);
+//		
+//		map=new HashMap<String,String>();
+//		map.put("data", "188");
+//		map.put("name","博客");
+//		map.put("categoryName", "Blogs/Wiki");
+//		 map.put("choosed", "y");
+//		categorylist.add(map);
+//		
+//		map=new HashMap<String,String>();
+//		map.put("data", "192");
+//		map.put("name","婚恋网站");
+//		map.put("categoryName", "Dating Personals");
+//		 map.put("choosed", "y");
+//		categorylist.add(map);
+//		
+//
+//		
+//		map=new HashMap<String,String>();
+//		map.put("data", "195");
+//		map.put("name","社交网络");
+//		map.put("categoryName", "Social Networking");
+//		 map.put("choosed", "y");
+//		categorylist.add(map);
+		
+		
+	
+
+		
+	}
+	
+
+
+
+
+}
+ 
+

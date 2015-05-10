@@ -1,0 +1,342 @@
+package com.pdstudio.carrecom.widge;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import android.content.Context;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AutoCompleteTextView;
+import android.widget.BaseAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.pdstudio.carrecom.tools.DebugUtil;
+import com.pdstudio.carrecom.R;
+
+public class AdvancedAutoCompleteTextView extends RelativeLayout {
+
+	private Context context;
+	private AutoCompleteTextView tv;
+
+	private List<String> _listString;
+
+	private static final int CLOSE_PNG = R.drawable.edittext_del;
+
+	public AdvancedAutoCompleteTextView(Context context) {
+		super(context);
+		// TODO Auto-generated constructor stub
+		this.context = context;
+	}
+
+	public AdvancedAutoCompleteTextView(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		// TODO Auto-generated constructor stub
+		this.context = context;
+	}
+
+	/**
+	 * 初始化保存到数据库中的字段
+	 * 
+	 * @param userId
+	 *            用户名
+	 * @param typeName
+	 *            类型
+	 */
+	public void setData(String[] list) {
+		_listString = Arrays.asList(list);
+		// 最多显示10个
+		AutoCompleteAdapter adapter = new AutoCompleteAdapter(context, 10);
+		setAdapter(adapter);
+
+	}
+
+	@Override
+	protected void onFinishInflate() {
+		super.onFinishInflate();
+		initViews();
+
+	}
+
+	private void initViews() {
+
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.FILL_PARENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
+		tv = new AutoCompleteTextView(context);
+		tv.setLayoutParams(params);
+		tv.setPadding(10, 0, 40, 0);
+		tv.setBackgroundResource(R.drawable.edit_normal_selector);
+		// tv.setSingleLine(true);
+
+		RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(48,
+		// RelativeLayout.LayoutParams.WRAP_CONTENT,
+				48);// RelativeLayout.LayoutParams.WRAP_CONTENT);
+		p.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+		p.addRule(RelativeLayout.CENTER_VERTICAL);
+		p.rightMargin = 10;
+		final ImageView iv = new ImageView(context);
+		iv.setLayoutParams(p);
+		iv.setScaleType(ScaleType.FIT_CENTER);
+		iv.setImageResource(CLOSE_PNG);
+		iv.setClickable(true);
+		iv.setVisibility(GONE);
+		iv.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				tv.setText("");
+			}
+		});
+
+		this.addView(tv);
+		this.addView(iv);
+
+		tv.addTextChangedListener(new TextWatcher() {
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before,
+					int count) {
+				// TODO Auto-generated method stub
+				DebugUtil.printDebugTag("autoEdit", "count=" + count);
+
+				if (count > 0) {
+					iv.setVisibility(VISIBLE);
+
+				} else {
+					iv.setVisibility(GONE);
+				}
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
+	}
+
+	public void addAutoText(String text) {
+		_listString.add(text);
+		((AutoCompleteAdapter) tv.getAdapter()).refreshDate();
+	}
+
+	public void setAdapter(AutoCompleteAdapter adapter) {
+		tv.setAdapter(adapter);
+	}
+
+	public void setThreshold(int threshold) {
+		tv.setThreshold(threshold);
+	}
+
+	public AutoCompleteTextView getAutoCompleteTextView() {
+		return tv;
+	}
+
+	public void setText(String text) {
+		tv.setText(text);
+	}
+
+	public String getText() {
+		return tv.getText().toString();
+	}
+
+	public class AutoCompleteAdapter extends BaseAdapter implements Filterable {
+		private Context context;
+		private ArrayFilter mFilter;
+		private List<String> mDatas;
+		private ArrayList<String> mOriginalValues;// 原来的值
+		private List<String> mObjects;// 过滤后的值
+		private final Object mLock = new Object();
+		private int maxMatch = 10;// 最大显示条数
+		ViewHolder holder = null;
+
+		public AutoCompleteAdapter(Context context, int maxMatch) {
+			this.context = context;
+			// this.mOriginalValues = mOriginalValues;
+			this.maxMatch = maxMatch;
+			refreshDate();
+		}
+
+		public void refreshDate() {
+			mDatas = _listString;
+
+			mOriginalValues = new ArrayList<String>();
+
+			for (String atd : mDatas) {
+				this.mOriginalValues.add(atd);
+			}
+
+			notifyDataSetChanged();
+
+		}
+
+		public void addData(String text) {
+			mOriginalValues.add(text);
+			mObjects.add(text);
+		}
+
+		@Override
+		public Filter getFilter() {
+			// TODO Auto-generated method stub
+			if (mFilter == null) {
+				mFilter = new ArrayFilter();
+			}
+			return mFilter;
+		}
+
+		private class ArrayFilter extends Filter {
+
+			@Override
+			protected FilterResults performFiltering(CharSequence prefix) {
+				// TODO Auto-generated method stub
+				FilterResults results = new FilterResults();
+
+				if (prefix == null || prefix.length() == 0) {
+					synchronized (mLock) {
+						Log.i("tag",
+								"mOriginalValues.size="
+										+ mOriginalValues.size());
+						ArrayList<String> list = new ArrayList<String>(
+								mOriginalValues);
+						results.values = list;
+						results.count = list.size();
+						return results;
+					}
+				} else {
+					String prefixString = prefix.toString().toLowerCase();
+
+					final int count = mOriginalValues.size();
+
+					final ArrayList<String> newValues = new ArrayList<String>(
+							count);
+
+					for (int i = 0; i < count; i++) {
+						final String value = mOriginalValues.get(i);
+						final String valueText = value.toLowerCase();
+
+						if (valueText.contains(prefixString)) {
+							newValues.add(value);
+						}
+
+						if (maxMatch > 0) {
+							if (newValues.size() > maxMatch - 1) {
+								break;
+							}
+						}
+					}
+
+					results.values = newValues;
+					results.count = newValues.size();
+				}
+
+				return results;
+			}
+
+			@SuppressWarnings("unchecked")
+			@Override
+			protected void publishResults(CharSequence constraint,
+					FilterResults results) {
+				// TODO Auto-generated method stub
+				mObjects = (List<String>) results.values;
+				if (results.count > 0) {
+					notifyDataSetChanged();
+				} else {
+					notifyDataSetInvalidated();
+				}
+			}
+
+		}
+
+		@Override
+		public int getCount() {
+			// TODO Auto-generated method stub
+			return mObjects.size();
+		}
+
+		@Override
+		public Object getItem(int position) {
+			// TODO Auto-generated method stub
+			// �˷������󣬾���Ҫʹ��
+			return mObjects.get(position);
+		}
+
+		@Override
+		public long getItemId(int position) {
+			// TODO Auto-generated method stub
+			return position;
+		}
+
+		@Override
+		public View getView(final int position, View convertView,
+				ViewGroup parent) {
+			// TODO Auto-generated method stub
+
+			if (convertView == null) {
+				holder = new ViewHolder();
+				LayoutInflater inflater = (LayoutInflater) context
+						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				convertView = inflater.inflate(
+						R.layout.simple_list_item_for_autocomplete, null);
+				holder.tv = (TextView) convertView
+						.findViewById(R.id.simple_item_0);
+				holder.iv = (ImageView) convertView
+						.findViewById(R.id.simple_item_1);
+				convertView.setTag(holder);
+			} else {
+				holder = (ViewHolder) convertView.getTag();
+			}
+
+			holder.tv.setText(mObjects.get(position));
+			holder.iv.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+					String obj = mObjects.remove(position);
+					mOriginalValues.remove(obj);
+
+					for (String at : mDatas) {
+						if (at.equals(obj)) {
+							mDatas.remove(at);
+							break;
+						}
+					}
+
+					notifyDataSetChanged();
+				}
+			});
+
+			return convertView;
+		}
+
+		class ViewHolder {
+			TextView tv;
+			ImageView iv;
+		}
+
+		public ArrayList<String> getAllItems() {
+			return mOriginalValues;
+		}
+	}
+
+}

@@ -1,0 +1,75 @@
+package com.surekam.greenguide.app;
+
+import com.surekam.greenguide.tools.ACache;
+
+import android.app.Application;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+
+public class AppContext extends Application {
+	private static AppContext instance;
+	public static boolean debug = true;
+
+	public int _screenWidth = 480;
+	public int _screenHeight = 800;
+	
+	public  ACache _aCache;
+
+	public static AppContext getInstance() {
+		return instance;
+	}
+
+	@Override
+	public void onCreate() {
+		// TODO Auto-generated method stub
+		instance = this;
+		_aCache = ACache.get(this);
+
+		if (!debug) {
+			// 注册App异常崩溃处理器
+			Thread.setDefaultUncaughtExceptionHandler(AppException
+					.getAppExceptionHandler());
+		}
+
+		super.onCreate();
+	}
+
+	/**
+	 * 获取App安装包信息
+	 * 
+	 * @return
+	 */
+	public PackageInfo getPackageInfo() {
+		PackageInfo info = null;
+		try {
+			info = getPackageManager().getPackageInfo(getPackageName(), 0);
+		} catch (NameNotFoundException e) {
+			e.printStackTrace(System.err);
+		}
+		if (info == null)
+			info = new PackageInfo();
+		return info;
+	}
+
+	public String getVersion() {
+		PackageManager packageManager = getPackageManager();
+		// getPackageName()是你当前类的包名，0代表是获取版本信息
+		PackageInfo packInfo;
+		String version = "";
+		try {
+			packInfo = packageManager.getPackageInfo(getPackageName(), 0);
+			version = packInfo.versionName;
+		} catch (NameNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			version = "";
+		}
+
+		return version;
+	}
+	
+	
+	
+
+}

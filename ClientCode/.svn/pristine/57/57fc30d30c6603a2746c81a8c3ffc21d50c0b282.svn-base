@@ -1,0 +1,154 @@
+package com.surekam.greenguide.ui.view;
+
+import org.apache.http.entity.StringEntity;
+import org.apache.http.protocol.HTTP;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
+import android.text.Html;
+import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+
+import com.lidroid.xutils.http.RequestParams;
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.api.HttpExecuteJson;
+import com.surekam.greenguide.api._FakeX509TrustManager;
+import com.surekam.greenguide.api.HttpExecuteJson.httpReturnJson;
+import com.surekam.greenguide.app.UIHelper;
+import com.surekam.greenguide.tools.DebugUtil;
+import com.surekam.greenguide.tools.StringUtils;
+
+@SuppressLint("NewApi")
+public class ViewDeviceSimple extends LinearLayout {
+	Context _context;
+	ImageView _ivLine;
+	boolean _isConnect = true;
+	boolean _isPhone = true;
+	TextView _tvDeviceName;
+	TextView _tvDeviceInfo;
+
+	public ViewDeviceSimple(Context context) {
+		super(context);
+		// TODO Auto-generated constructor stub
+		initView(context);
+	}
+
+	public ViewDeviceSimple(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		// TODO Auto-generated constructor stub
+		initView(context);
+	}
+
+	public void setData(String title, boolean isPhone) {
+		_isPhone = isPhone;
+		_isConnect = true;
+		refreshUI(title);
+	}
+
+	public void titleVisible(boolean visible) {
+		_tvDeviceName.setVisibility(visible ? View.VISIBLE : View.GONE);
+	}
+
+	public void setBackgroundTrans() {
+		// findViewById(R.id.device_layout).setBackgroundResource(
+		// R.color.transparent);
+	}
+
+	private void initView(Context context) {
+		_context = context;
+
+		inflate(_context, R.layout.list_item_device_simple, this);
+
+		_tvDeviceName = (TextView) findViewById(R.id.device_tv_title);
+		_tvDeviceInfo = (TextView) findViewById(R.id.device_tv_content);
+
+	}
+
+	public void setConnectUI(boolean isConnect) {
+
+		_isConnect = isConnect;
+		refreshUI("");
+
+	}
+
+	public void refreshUI(String title) {
+		if (!StringUtils.isEmpty(title)) {
+			_tvDeviceName.setText("设备:   " + title);
+		}
+
+		String info = getInfoHtml();
+		_tvDeviceInfo.setText(Html.fromHtml(info + ""));
+
+		int resId = _isPhone ? (_isConnect ? R.drawable.iphoneup
+				: R.drawable.iphonedown) : (_isConnect ? R.drawable.inter_ss_2
+				: R.drawable.inter_ss_22);
+
+		ImageView devicePic = (ImageView) findViewById(R.id.device_iv_device_pic);
+		devicePic.setImageResource(resId);
+
+		devicePic.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				showPop(v);
+			}
+		});
+	}
+
+	PopupWindow mPopupWindow;
+	View mPopView;
+
+	public String getInfoHtml() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("<font  color=\"#333333\">连接状态  :  </font>");
+		sb.append("<font  color=\"#666666\">已连接</font>");
+		sb.append("<br>");
+
+		sb.append("<font  color=\"#333333\">本次已连接时长 :  </font>");
+		sb.append("<font  color=\"#666666\">3小时</font>");
+		sb.append("<br>");
+
+		sb.append("<font  color=\"#333333\">总连接时长 :  </font>");
+		sb.append("<font  color=\"#666666\">30小时</font>");
+		sb.append("<br>");
+
+		sb.append("<font  color=\"#333333\">当前浏览网站 :  </font>");
+		sb.append("<font  color=\"#666666\">baidu.com</font>");
+		// sb.append("<br>");
+
+		return sb.toString();
+	}
+
+	public void showPop(View v) {
+		if (mPopView == null) {
+			mPopView = LayoutInflater.from(_context).inflate(
+					R.layout.view_pop_text, null);
+
+			/** 初始化PopupWindow */
+
+			mPopupWindow = new PopupWindow(mPopView,
+					ViewGroup.LayoutParams.WRAP_CONTENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT);
+			mPopupWindow.setFocusable(true);// 取得焦点
+			mPopupWindow.setBackgroundDrawable(new BitmapDrawable());
+			/** 设置PopupWindow弹出和退出时候的动画效果 */
+			mPopupWindow.setAnimationStyle(R.style.MyDialogStyleTop);
+		}
+
+		TextView tv = (TextView) mPopView.findViewById(R.id.tv_content);
+		tv.setText(Html.fromHtml(getInfoHtml()));
+		mPopupWindow.showAsDropDown(v, 0, 0);
+	}
+}

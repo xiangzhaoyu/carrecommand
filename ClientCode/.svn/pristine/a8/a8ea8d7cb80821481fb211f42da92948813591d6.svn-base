@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/device_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_list_all"
+    android:gravity="center_vertical"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/device_layout_title"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@drawable/common_list_category_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp" >
+
+        <TextView
+            android:id="@+id/device_tv_title"
+            style="@style/textView_size14_blue"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.0"
+            android:text=" 、" />
+
+        <TextView
+            android:id="@+id/device_tv_connect_state"
+            style="@style/textView_size14_yahei"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_weight="1.0"
+            android:text="连接状态:已连接" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp" >
+
+        <ImageView
+            android:id="@+id/device_iv_device_pic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/iphoneup" />
+
+        <ImageView
+            android:id="@+id/device_iv_line"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/inter_ss_line"
+            android:maxWidth="300dp"
+            android:scaleType="centerInside" />
+
+        <ImageView
+            android:id="@+id/device_iv_network"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/inter_ss_1" />
+    </LinearLayout>
+
+    <TextView
+        style="@style/textView_size14_yahei"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:paddingTop="8dp"
+        android:text="左滑断开网络,右滑连接网络 \r\n点击图标查看详情" />
+
+</LinearLayout>

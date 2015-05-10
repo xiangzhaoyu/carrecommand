@@ -1,0 +1,144 @@
+package com.surekam.greenguide.ui.fragment;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.common.BaseFragment;
+
+import com.surekam.greenguide.tools.MenuUtil;
+import com.surekam.greenguide.widge.ViewRadioGroup;
+
+public class FragmentAllReport  extends BaseFragment{
+
+	
+	List<Fragment> _fragmentList = new ArrayList<Fragment>();
+
+	ViewPager _viewPager;
+	MyAdapter _adapter;
+	
+	
+
+	String[] titles = new String[] { "健康报告", "习惯统计", "上网时间"};
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_all_report, null);
+		_context =getActivity();
+		
+		return _view;
+	}
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onActivityCreated(savedInstanceState);
+
+		initTitle();
+		initView();
+	}
+
+	private void initTitle() {
+		MenuUtil.setMenuBack(getActivity(), _view);
+		MenuUtil.setMenuTitle(_view, "健康报告");
+		
+		MenuUtil.setMenuMore(getActivity(), _view, false);
+	
+	}
+
+	private void initView() {
+
+
+
+
+		_viewPager = (ViewPager) _view.findViewById(R.id.blog_viewpager);
+
+	
+		_fragmentList.add(new FragmentHealth());
+		_fragmentList.add(new FragmentReportStatistic());
+		_fragmentList.add(new FragmentReport());
+		
+		_adapter = new MyAdapter(getChildFragmentManager());
+		_viewPager.setAdapter(_adapter);
+
+		_viewPager.setSaveEnabled(false);
+
+		_viewPager.requestFocus();
+
+		_viewPager.setOnPageChangeListener(new OnPageChangeListener() {
+
+			@Override
+			public void onPageSelected(int arg0) {
+				// TODO Auto-generated method stub
+				String title = titles[arg0];
+
+				
+				((TextView) _view.findViewById(R.id.topbar_title))
+						.setText(title);
+				
+				
+			TextView dotview=(TextView) _view.findViewById(R.id.pointdot);
+		 if(arg0==0) dotview.setText("1 - - ");
+		 if(arg0==1) dotview.setText("- 2 - ");
+		 if(arg0==2) dotview.setText("- - 3 ");
+		
+		 
+		 
+			
+
+				
+			}
+
+			@Override
+			public void onPageScrolled(int arg0, float arg1, int arg2) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onPageScrollStateChanged(int arg0) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
+		_viewPager.setCurrentItem(0);
+	}
+	
+	public class MyAdapter extends FragmentPagerAdapter {
+		public MyAdapter(FragmentManager fm) {
+			super(fm);
+		}
+
+		@Override
+		public int getCount() {
+			return _fragmentList.size();
+		}
+
+		@Override
+		public Fragment getItem(int position) {
+			return _fragmentList.get(position);
+		}
+
+		@Override
+		public void destroyItem(ViewGroup container, int position, Object object) {
+			// 注释自带的销毁方法防止页面被销毁
+			// 这个方法是重点
+			// super.destroyItem(container, position, object);
+		}
+	}
+
+
+}

@@ -1,0 +1,22 @@
+<resources>
+
+    <string name="app_name">GreenGuide</string>
+    <string name="test_login_account"></string>
+    <string name="test_login_password"></string>
+    <string name="login_dialog_logo">手机或者联通账号</string>
+    <string name="login_dialog_account_hint">请输入手机或者联通账号</string>
+    <string name="login_dialog_password_hint">请输入密码</string>
+    <string name="login_dialog_autoLogin">自动登录</string>
+    <string name="login_dialog_login">登录</string>
+    <string name="login_dialog_reg">注册</string>
+    
+    <!--  -->
+    <string name="drop_down_list_header_default_text">点击刷新&#8230;</string>
+    <string name="drop_down_list_header_pull_text">下拉刷新&#8230;</string>
+    <string name="drop_down_list_header_release_text">松开刷新&#8230;</string>
+    <string name="drop_down_list_header_loading_text">正在刷新&#8230;</string>
+    <string name="drop_down_list_footer_default_text">加载更多</string>
+    <string name="drop_down_list_footer_loading_text">正在加载&#8230;</string>
+    <string name="drop_down_list_footer_no_more_text">已全部加载完成</string>
+
+</resources>

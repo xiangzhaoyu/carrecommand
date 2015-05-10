@@ -1,0 +1,105 @@
+package com.surekam.greenguide.bean;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class PolicieClass {
+	String[] protocolList;
+
+	List<BlockPeriodList> periodList = new ArrayList<BlockPeriodList>();
+	List<BlockPeriodList> blockPeriodList = new ArrayList<BlockPeriodList>();
+	String actionType; // "BLOCK" 阻拦 DETECT 允许
+
+	PolicyPath policyPath;
+	String excludeType;
+	boolean scanRequest;
+	boolean scanResponse;
+	String serviceType;
+	int id;
+
+	public PolicieClass() {
+		// TODO Auto-generated constructor stub
+
+	}
+
+	public List<BlockPeriodList> getBlockPeriodList() {
+		return blockPeriodList;
+	}
+
+	public void setBlockPeriodList(List<BlockPeriodList> blockPeriodList) {
+		this.blockPeriodList = blockPeriodList;
+	}
+
+	public String getActionType() {
+		return actionType;
+	}
+
+	public void setActionType(String actionType) {
+		this.actionType = actionType;
+	}
+
+	public PolicyPath getPolicyPath() {
+		return policyPath;
+	}
+
+	public void setPolicyPath(PolicyPath policyPath) {
+		this.policyPath = policyPath;
+	}
+
+	public String[] getProtocolList() {
+		return protocolList;
+	}
+
+	public void setProtocolList(String[] protocolList) {
+		this.protocolList = protocolList;
+	}
+
+	public String getExcludeType() {
+		return excludeType;
+	}
+
+	public void setExcludeType(String excludeType) {
+		this.excludeType = excludeType;
+	}
+
+	public boolean getScanRequest() {
+		return scanRequest;
+	}
+
+	public void setScanRequest(boolean scanRequest) {
+		this.scanRequest = scanRequest;
+	}
+
+	public boolean getScanResponse() {
+		return scanResponse;
+	}
+
+	public void setScanResponse(boolean scanResponse) {
+		this.scanResponse = scanResponse;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getServiceType() {
+		return serviceType;
+	}
+
+	public void setServiceType(String serviceType) {
+		this.serviceType = serviceType;
+	}
+
+	public List<BlockPeriodList> getPeriodList() {
+		return periodList;
+	}
+
+	public void setPeriodList(List<BlockPeriodList> periodList) {
+		this.periodList = periodList;
+	}
+
+}

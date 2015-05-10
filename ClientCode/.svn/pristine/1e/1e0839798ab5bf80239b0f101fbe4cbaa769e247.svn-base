@@ -1,0 +1,164 @@
+package com.surekam.greenguide.ui.fragment;
+
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.RadioButton;
+
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.common.BaseFragment;
+import com.surekam.greenguide.tools.DrawableUtil;
+import com.surekam.greenguide.tools.MenuUtil;
+import com.surekam.greenguide.ui.activity.ActivityMain;
+import com.surekam.greenguide.ui.view.ViewDevice;
+import com.surekam.greenguide.widge.ViewRadioGroup;
+
+public class FragmentMain extends BaseFragment implements OnClickListener {
+	ViewRadioGroup _viewGroup;
+	ViewDevice _viewDevice;
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		_view = inflater.inflate(R.layout.fragment_main, null);
+		_context = getActivity();
+		initTitle();
+		initView();
+		return _view;
+	}
+
+	private void initTitle() {
+		// MenuUtil.setMenuBackTransparent(_view);
+		MenuUtil.setMenuBack(getActivity(), _view, false);
+		MenuUtil.setMenuMore(getActivity(), _view, false);
+	}
+
+	private void initView() {
+		_view.findViewById(R.id.grid_1).setOnClickListener(this);
+		_view.findViewById(R.id.grid_2).setOnClickListener(this);
+		_view.findViewById(R.id.grid_3).setOnClickListener(this);
+		_view.findViewById(R.id.grid_4).setOnClickListener(this);
+
+		// _view.findViewById(R.id.main_bt_on).setOnClickListener(this);
+		// _view.findViewById(R.id.main_bt_off).setOnClickListener(this);
+		_viewDevice = (ViewDevice) _view.findViewById(R.id.main_vd_device);
+		_viewDevice.titleVisible(false);
+		_viewDevice.setBackgroundTrans();
+
+		// _viewGroup = (ViewRadioGroup) _view
+		// .findViewById(R.id.main_vrg_device_list);
+		// _viewGroup.setRadioButtonText("  手机", "宽带");
+
+		// _viewGroup.setBackGroud(1, R.drawable.radio_device_phone_seletor);
+		// _viewGroup.setBackGroud(2, R.drawable.radio_device_computer_seletor);
+
+		// _viewGroup.setSelectChangedListener(new onSelectedListener() {
+		// @Override
+		// public void onSelectedChanged(int whitch) {
+		// // TODO Auto-generated method stub
+		//
+		// }
+		// });
+		//
+		// fakeChangeDevice(1);
+
+		RadioButton rb1 = (RadioButton) _view.findViewById(R.id.rb_1);
+
+		Drawable myImage = getResources().getDrawable(R.drawable.phone);
+		int width = DrawableUtil.dip2px(_context, 17);
+		int Height = DrawableUtil.dip2px(_context, 28);
+		myImage.setBounds(1, 1, width, Height);
+		rb1.setCompoundDrawables(myImage, null, null, null);
+
+		rb1.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
+				// TODO Auto-generated method stub
+				if (arg1) {
+					fakeChangeDevice(1);
+				}
+			}
+		});
+
+		RadioButton rb2 = (RadioButton) _view.findViewById(R.id.rb_2);
+
+		Drawable imaage2 = getResources().getDrawable(R.drawable.compute);
+		int width2 = DrawableUtil.dip2px(_context, 33);
+		int height2 = DrawableUtil.dip2px(_context, 28);
+		imaage2.setBounds(1, 1, width2, height2);
+		rb2.setCompoundDrawables(imaage2, null, null, null);
+
+		rb2.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton arg0, boolean arg1) {
+				// TODO Auto-generated method stub
+				if (arg1) {
+					fakeChangeDevice(2);
+				}
+			}
+		});
+
+	}
+
+	private void fakeChangeDevice(int whitch) {
+		String title = (whitch == 1) ? "  18956661234" : "宽带";
+		boolean isPhone = (whitch == 1);
+		_viewDevice.setData(title, isPhone);
+
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId()) {
+		case R.id.grid_1:
+			if (_context instanceof ActivityMain) {
+				((ActivityMain) _context).addFragment(new FramentDeviceList(),
+						"FragmentDeviceList");
+			}
+
+			break;
+		case R.id.grid_2:
+			if (_context instanceof ActivityMain) {
+				((ActivityMain) _context).addFragment(new FragmentAllReport(),
+						"FragmentAllReport");
+			}
+
+			break;
+		case R.id.grid_3:
+			if (_context instanceof ActivityMain) {
+				((ActivityMain) _context).addFragment(new FragmentTimeList(),
+						"FragmentTimeList");
+			}
+
+			break;
+		case R.id.grid_4:
+
+			if (_context instanceof ActivityMain) {
+				((ActivityMain) _context).addFragment(
+						new FragmentWhiteListNormal(), "FragmentMainPhoto");
+			}
+
+			break;
+
+		// case R.id.main_bt_on:
+		// _view.findViewById(R.id.main_bt_on).setVisibility(View.GONE);
+		// _view.findViewById(R.id.main_bt_off).setVisibility(View.VISIBLE);
+		// break;
+		// case R.id.main_bt_off:
+		// _view.findViewById(R.id.main_bt_off).setVisibility(View.GONE);
+		// _view.findViewById(R.id.main_bt_on).setVisibility(View.VISIBLE);
+		// break;
+
+		default:
+			break;
+		}
+
+	}
+}

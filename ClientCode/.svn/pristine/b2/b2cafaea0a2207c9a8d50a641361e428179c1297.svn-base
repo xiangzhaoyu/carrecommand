@@ -1,0 +1,522 @@
+package com.surekam.greenguide.ui.view;
+
+import org.apache.http.entity.StringEntity;
+import org.apache.http.protocol.HTTP;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
+import android.text.Html;
+import android.util.AttributeSet;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+
+import com.lidroid.xutils.http.RequestParams;
+import com.surekam.greenguide.R;
+import com.surekam.greenguide.api.HttpExecuteJson;
+import com.surekam.greenguide.api._FakeX509TrustManager;
+import com.surekam.greenguide.api.HttpExecuteJson.httpReturnJson;
+import com.surekam.greenguide.app.UIHelper;
+import com.surekam.greenguide.tools.DebugUtil;
+import com.surekam.greenguide.tools.StringUtils;
+
+@SuppressLint("NewApi")
+public class ViewDevice extends LinearLayout {
+	Context _context;
+	ImageView _ivLine;
+	boolean _isConnect = true;
+	boolean _isFirstLoad=true;
+	boolean _isPhone = true;
+	
+	int _policyId=-1;
+
+	public ViewDevice(Context context) {
+		super(context);
+		// TODO Auto-generated constructor stub
+		initView(context);
+	}
+
+	public ViewDevice(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		// TODO Auto-generated constructor stub
+		initView(context);
+	}
+
+	public void setData(String title, boolean isPhone) {
+		_isPhone = isPhone;
+		_isConnect = true;
+		refreshUI(title);
+	}
+	
+	public void getStateFromServer(){
+		
+		
+		
+	}
+
+	public void titleVisible(boolean visible) {
+		findViewById(R.id.device_layout_title).setVisibility(
+				visible ? View.VISIBLE : View.GONE);
+	}
+
+	public void setBackgroundTrans() {
+		findViewById(R.id.device_layout).setBackgroundResource(
+				R.color.transparent);
+	}
+
+	private void initView(Context context) {
+		_context = context;
+
+		_progressDialog = new MyProgressDialog(_context);
+		inflate(_context, R.layout.list_item_device, this);
+		_ivLine = (ImageView) findViewById(R.id.device_iv_line);
+	}
+
+	float _startX;
+	float _startY;
+
+    
+	public void setConnectUI(boolean isConnect){
+		
+		_isConnect=isConnect;
+		refreshUI("");
+		
+	}
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		// TODO Auto-generated method stub
+		switch (event.getAction() & MotionEvent.ACTION_MASK) {
+		case MotionEvent.ACTION_DOWN: // 指点杆按下
+			// 将当前的坐标保存为起始点
+			_startX = event.getX();
+			_startY = event.getY();
+			break;
+		case MotionEvent.ACTION_MOVE: // 指点杆保持按下，并且进行位移
+
+			break;
+		case MotionEvent.ACTION_UP: // 指点杆离开屏幕
+			float distance = event.getX() - _startX;
+			if (distance > 100 && !_isConnect) {
+				connetNet();
+			}
+
+			if (distance < -100 && _isConnect) {
+				disconnetNet();
+			}
+
+			break;
+		case MotionEvent.ACTION_POINTER_UP: // 有手指头离开屏幕，但还有没离开的
+			break;
+		case MotionEvent.ACTION_POINTER_DOWN: // 如果已经有手指压在屏幕上，又有一个手指压在了屏幕上
+			break;
+		}
+
+		return true;
+	}
+
+	private httpReturnJson mcheckconnectListener = new httpReturnJson() {
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+			DebugUtil.printDebugTag("categoryerror", msg);
+			UIHelper.ToastMessage(_context, "设置失败，请重新设置" );
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+			_isConnect = true;
+			refreshUI("");
+			
+		}
+	};
+	
+	
+	private httpReturnJson mdisconnectListener = new httpReturnJson() {
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+			DebugUtil.printDebugTag("categoryerror", msg);
+			UIHelper.ToastMessage(_context, "设置失败，请重新设置" );
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+			_isConnect = false;
+			refreshUI("");
+			
+		}
+	};
+	
+	
+	
+	private void deletePolicy(int id){
+		
+		
+	}
+	
+	private httpReturnJson mqueryListener = new httpReturnJson() {
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+			DebugUtil.printDebugTag("categoryerror", msg);
+			UIHelper.ToastMessage(_context, "设置失败，请重新设置" );
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+		     
+			try
+			{
+				
+				JSONArray array=new JSONArray(result);
+				int id=-1;
+			    if(array.length()>0){
+			    	
+			    	
+			    	for(int i=0;i<array.length();i++)
+			    	{	    		
+			    		JSONObject obj=array.getJSONObject(i);
+			    		JSONObject policyPath=	obj.getJSONObject("policyPath");
+			    		
+			    		if(_isPhone)
+			    		{
+			    		    if(policyPath.getString("srcAddress").equals("10.120.0.54"))
+			    		    {
+			    		       	id=obj.getInt("id");
+			    		    }
+			    		}
+			    		else
+			    		{
+			    			if(policyPath.getString("srcAddress").equals("10.120.0.50"))
+			    		    {
+			    		       	id=obj.getInt("id");
+			    		       	break;
+			    		       
+			    		    }
+			    			
+			    		}
+			    		
+			    	}
+			    	_policyId=id;
+			    	if(id!=-1){
+			    		_isConnect=false;
+			    		refreshUI("");
+			    		    
+			    	}
+			    	
+			    }
+			    else
+			    {
+			    	if(id!=-1){
+			    		_isConnect=false;
+			    		refreshUI("");	    
+			    	}
+			    	  
+			    }
+				
+				
+			}
+			catch(Exception ex)
+			{
+				
+				UIHelper.ToastMessage(_context, "获取状态失败，请检查网络连接");
+			}
+			
+			
+		}
+	};
+	
+	private httpReturnJson mconnectListener = new httpReturnJson() {
+		@Override
+		public void onFailure(int error, String msg) {
+			// TODO Auto-generated method stub
+			DebugUtil.printDebugTag("categoryerror", msg);
+			UIHelper.ToastMessage(_context, "设置失败，请重新设置" );
+		}
+
+		@Override
+		public void onCancel() {
+			// TODO Auto-generated method stub
+
+		}
+
+		public void onSuccess(String result) {
+			// TODO Auto-generated method stub
+			_isConnect = true;
+			refreshUI("");
+			
+		}
+	};
+	
+	
+	private void checkConnect(){
+		
+		   _FakeX509TrustManager.allowAllSSL();
+
+					HttpExecuteJson http = new HttpExecuteJson(_context, mqueryListener);
+					String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/tb";
+					http.setProgressText("正在检测被控网络连接状态");
+				    http.get(url, null);
+		
+	}
+	
+	private void connetNet() {
+		
+		
+		
+		if(_policyId!=-1)
+		{
+		   try
+		   {
+			
+			
+		   
+		      _FakeX509TrustManager.allowAllSSL();
+
+			HttpExecuteJson http = new HttpExecuteJson(_context, mconnectListener);
+      
+			String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/tb/policy/"+_policyId;
+
+			RequestParams params=new RequestParams();
+			params.addHeader("Content-Type", "application/json");
+			http.setProgressText("正在连接网络");   
+		    http.deleteWithReturn(url, params);
+
+		    }
+		    catch(Exception ex){		
+			    DebugUtil.printActivityTag(_context);
+		    }
+		}
+			
+			
+
+		
+	}
+
+	private void disconnetNet() {
+		
+		
+		if(_policyId==-1)
+		{
+		  try
+		  {
+			
+		   _FakeX509TrustManager.allowAllSSL();
+
+			HttpExecuteJson http = new HttpExecuteJson(_context, mdisconnectListener);
+			
+            JSONObject obj=new JSONObject("{\"protocolList\":[],\"blockPeriod\":{\"endDay\":7,\"startDay\":1,\"startTime\":{\"mins\":0,\"hours\":0},\"endTime\":{\"mins\":59,\"hours\":23},\"timezone\":\"Asia/Hong_Kong\"},\"actionType\":\"BLOCK\",\"policyPath\":{\"dstAddress\":null,\"srcAddress\":\"0.0.0.0/0\",\"srcIsGroup\":false,\"srcName\":null},\"excludeType\":\"NONE\",\"scanRequest\":false,\"scanResponse\":false,\"serviceType\":\"TB\"}");
+ 
+             if(_isPhone) {
+            	 
+            	 obj.getJSONObject("policyPath").put("srcAddress","10.120.0.54");
+             }   
+             else {
+            	 obj.getJSONObject("policyPath").put("srcAddress","10.120.0.50");
+             }
+            
+			String url = "https://greenchina.wedgenetworks.com/ssgmanager/rest/policies/tb";
+
+			RequestParams params=new RequestParams();
+			params.addHeader("Content-Type", "application/json");
+			
+			try
+			 {
+				 params.setBodyEntity(new StringEntity(obj.toString(),HTTP.UTF_8));
+			   
+			 }
+			 catch(Exception ex)
+			 {
+				 
+				 
+			 }
+			
+			http.setProgressText("正在断开连接");
+		    http.post(url, params);
+			
+		
+	    	}
+		    catch(Exception ex){
+	  		
+		  	       DebugUtil.printActivityTag(_context);
+			
+		   }
+		}
+	}
+
+	MyProgressDialog _progressDialog;
+
+	/**
+	 * 访问服务器的线程
+	 */
+//	private class disconnetTask extends AsyncTask<String, Void, String> {
+//
+//		@Override
+//		protected void onPreExecute() {
+//			// TODO Auto-generated method stub
+//			_progressDialog.show("正在断开网络...", false);
+//
+//			super.onPreExecute();
+//		}
+//
+//		@Override
+//		protected String doInBackground(String... params) {
+//			// TODO Auto-generated method stub
+//			try {
+//				Thread.sleep(2000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			return null;
+//		}
+//
+//		@Override
+//		protected void onPostExecute(String result) {
+//			// TODO Auto-generated method stub
+//			super.onPostExecute(result);
+//			_progressDialog.dimiss();
+//			_isConnect = false;
+//			refreshUI("");
+//		}
+//	}
+//
+//	private class connectTask extends AsyncTask<String, Void, String> {
+//
+//		@Override
+//		protected void onPreExecute() {
+//			// TODO Auto-generated method stub
+//			_progressDialog.show("正在连接网络...", false);
+//
+//			super.onPreExecute();
+//		}
+//
+//		@Override
+//		protected String doInBackground(String... params) {
+//			// TODO Auto-generated method stub
+//			try {
+//				Thread.sleep(2000);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			return null;
+//		}
+//
+//		@Override
+//		protected void onPostExecute(String result) {
+//			// TODO Auto-generated method stub
+//			super.onPostExecute(result);
+//			_progressDialog.dimiss();
+//			_isConnect = true;
+//			refreshUI("");
+//		}
+//	}
+
+	public void refreshUI(String title) {
+		if (!StringUtils.isEmpty(title)) {
+			((TextView) findViewById(R.id.device_tv_title)).setText(title);
+		}
+
+		String isConnect = _isConnect ? "已连接" : "连接断开";
+		((TextView) findViewById(R.id.device_tv_connect_state))
+				.setText("连接状态: " + isConnect + "");
+
+		int resId = _isPhone ? (_isConnect ? R.drawable.iphoneup
+				: R.drawable.iphonedown) : (_isConnect ? R.drawable.inter_ss_2
+				: R.drawable.inter_ss_22);
+
+		ImageView devicePic = (ImageView) findViewById(R.id.device_iv_device_pic);
+		devicePic.setImageResource(resId);
+
+		int netResId = _isConnect ? R.drawable.inter_ss_1
+				: R.drawable.inter_ss_11;
+		((ImageView) findViewById(R.id.device_iv_network))
+				.setImageResource(netResId);
+
+		int connectLine = _isConnect ? R.drawable.inter_ss_line
+				: R.drawable.disconnect;
+		_ivLine.setBackgroundResource(connectLine);
+
+		devicePic.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				showPop(v);
+			}
+		});
+	}
+
+	PopupWindow mPopupWindow;
+	View mPopView;
+
+	public String getInfoHtml() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("<font  color=\"#333333\">连接状态  :  </font>");
+		sb.append("<font  color=\"#666666\">已连接</font>");
+		sb.append("<br>");
+
+		sb.append("<font  color=\"#333333\">本次已连接时长 :  </font>");
+		sb.append("<font  color=\"#666666\">3小时</font>");
+		sb.append("<br>");
+
+		sb.append("<font  color=\"#333333\">总连接时长 :  </font>");
+		sb.append("<font  color=\"#666666\">30小时</font>");
+		sb.append("<br>");
+
+		sb.append("<font  color=\"#333333\">当前浏览网站 :  </font>");
+		sb.append("<font  color=\"#666666\">baidu.com</font>");
+		// sb.append("<br>");
+
+		return sb.toString();
+	}
+
+	public void showPop(View v) {
+		if (mPopView == null) {
+			mPopView = LayoutInflater.from(_context).inflate(
+					R.layout.view_pop_text, null);
+
+			/** 初始化PopupWindow */
+
+			mPopupWindow = new PopupWindow(mPopView,
+					ViewGroup.LayoutParams.WRAP_CONTENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT);
+			mPopupWindow.setFocusable(true);// 取得焦点
+			mPopupWindow.setBackgroundDrawable(new BitmapDrawable());
+			/** 设置PopupWindow弹出和退出时候的动画效果 */
+			mPopupWindow.setAnimationStyle(R.style.MyDialogStyleTop);
+		}
+
+		TextView tv = (TextView) mPopView.findViewById(R.id.tv_content);
+		tv.setText(Html.fromHtml(getInfoHtml()));
+		mPopupWindow.showAsDropDown(v, 0, 0);
+	}
+}

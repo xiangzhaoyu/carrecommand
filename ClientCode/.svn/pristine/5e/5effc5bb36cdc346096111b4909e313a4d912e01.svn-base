@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/frame_bg_small"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <include layout="@layout/navigate_bar" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp" >
+
+            <TextView
+                style="@style/textView_size14_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="过滤级别设置:\n  低过滤级别适合18岁以上的青年\n  中过滤级别适合13-18岁的青少年\n  高过滤级别适合12岁以下少年" />
+
+            <Button
+                android:id="@+id/white_list_bt_advance"
+                style="@style/textView_size14_yahei"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_gravity="right"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/btn_white2"
+                android:text="高级黑白名单设置" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="8dp" >
+
+        <com.surekam.greenguide.widge.CustomSeekBar
+            android:id="@+id/white_list_seekbar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="15.0dip"
+            android:minHeight="15.0dip"
+            android:paddingLeft="8.0dip"
+            android:paddingRight="8.0dip"
+            android:progressDrawable="@drawable/my_seekbar"
+            android:thumb="@drawable/eq_seekbar_knob"
+            android:thumbOffset="-27px" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp" >
+
+            <TextView
+                style="@style/textView_size12_yahei"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="低过滤级别" />
+
+            <TextView
+                style="@style/textView_size12_yahei"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center"
+                android:text="中过滤级别" />
+
+            <TextView
+                style="@style/textView_size12_yahei"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="高过滤级别" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

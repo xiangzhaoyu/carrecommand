@@ -1,0 +1,75 @@
+package com.surekam.greenguide.bean;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class WedGeos {
+	String[] protocolList;
+	
+
+	List<DaySchedule> blockPeridList = new ArrayList<DaySchedule>();
+	String actionType; // "BLOCK" 阻拦 DETECT 允许
+
+	PolicyPath policyPath;
+	String eexcludeType;
+	String scamRequest;
+	String scaanResponse;
+	String serviceType;
+
+	public List<DaySchedule> getBlockPeridList() {
+		return blockPeridList;
+	}
+
+	public void setBlockPeridList(List<DaySchedule> blockPeridList) {
+		this.blockPeridList = blockPeridList;
+	}
+
+	public String getActionType() {
+		return actionType;
+	}
+
+	public void setActionType(String actionType) {
+		this.actionType = actionType;
+	}
+
+	public PolicyPath getPolicyPath() {
+		return policyPath;
+	}
+
+	public void setPolicyPath(PolicyPath policyPath) {
+		this.policyPath = policyPath;
+	}
+
+	public String getEexcludeType() {
+		return eexcludeType;
+	}
+
+	public void setEexcludeType(String eexcludeType) {
+		this.eexcludeType = eexcludeType;
+	}
+
+	public String getScamRequest() {
+		return scamRequest;
+	}
+
+	public void setScamRequest(String scamRequest) {
+		this.scamRequest = scamRequest;
+	}
+
+	public String getScaanResponse() {
+		return scaanResponse;
+	}
+
+	public void setScaanResponse(String scaanResponse) {
+		this.scaanResponse = scaanResponse;
+	}
+
+	public String getServiceType() {
+		return serviceType;
+	}
+
+	public void setServiceType(String serviceType) {
+		this.serviceType = serviceType;
+	}
+
+}

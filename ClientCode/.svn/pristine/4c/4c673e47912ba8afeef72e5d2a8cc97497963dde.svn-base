@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/frame_bg_small"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <include layout="@layout/navigate_bar" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="13dp" >
+
+            <TextView
+                style="@style/textView_size14_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:lineSpacingMultiplier="1.2"
+                android:text="@string/filter_cotent" />
+
+            <Button
+                android:id="@+id/white_list_bt_advance"
+                style="@style/textView_size14_yahei"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_gravity="right"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/btn_white2"
+                android:text="@string/filter_bt_advance" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="8dp" >
+
+        <com.surekam.greenguide.widge.CustomSeekBar
+            android:id="@+id/white_list_seekbar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="18.0dip"
+            android:layout_marginRight="18.0dip"
+            android:maxHeight="15.0dip"
+            android:minHeight="15.0dip"
+            android:progressDrawable="@drawable/my_seekbar"
+            android:thumb="@drawable/eq_seekbar_knob"
+            android:thumbOffset="8dp" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp" >
+
+            <TextView
+                style="@style/textView_size12_yahei"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center"
+                android:text="@string/filter_none" />
+
+            <TextView
+                style="@style/textView_size12_yahei"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center"
+                android:text="@string/filter_lower" />
+
+            <TextView
+                style="@style/textView_size12_yahei"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center"
+                android:text="@string/filter_middle" />
+
+            <TextView
+                style="@style/textView_size12_yahei"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.0"
+                android:gravity="center"
+                android:text="@string/filter_hight" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
